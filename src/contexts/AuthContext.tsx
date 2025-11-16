@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { User, AuthState, LoginFormData, SignupFormData } from '@/types';
 import { apiClient } from '@/utils/api';
 import { toast } from 'sonner';
@@ -58,6 +59,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const navigate = useNavigate();
 
   // Load auth data from localStorage on mount
   useEffect(() => {
@@ -95,6 +97,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       toast.success('Login successful!');
+      
+      // Redirect to onboarding for new users, dashboard for existing users
+      if (user.role === 'owner') {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -118,6 +127,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       toast.success('Account created successfully!');
+      
+      // Always redirect to onboarding after signup
+      navigate('/onboarding');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });

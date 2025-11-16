@@ -1,8 +1,20 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="64" fill="#0B6E4F"/>
-  <path d="M256 85.33L341.33 170.67L256 256L170.67 170.67L256 85.33Z" fill="white" fill-opacity="0.9"/>
-  <path d="M256 256L341.33 341.33L256 426.67L170.67 341.33L256 256Z" fill="white" fill-opacity="0.9"/>
-  <path d="M85.33 256L170.67 341.33L256 256L170.67 170.67L85.33 256Z" fill="white" fill-opacity="0.7"/>
-  <path d="M426.67 256L341.33 341.33L256 256L341.33 170.67L426.67 256Z" fill="white" fill-opacity="0.7"/>
-  <circle cx="256" cy="256" r="42.67" fill="#F59E0B"/>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark green background for PWA icon -->
+  <rect width="512" height="512" fill="#0D2E27" rx="64"/>
+  
+  <!-- Shopping Bag Icon Group -->
+  <g transform="translate(130, 130)">
+    <!-- Bag body -->
+    <rect x="0" y="0" width="160" height="190" rx="20" fill="#F3F1EA"/>
+    <!-- Bag handle -->
+    <path d="M25 0 Q80 -40, 135 0" stroke="#F3F1EA" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <!-- Bag top fold -->
+    <rect x="0" y="0" width="160" height="16" fill="#F3F1EA" rx="8"/>
+    <!-- Bag rivets/details -->
+    <circle cx="32" y="20" r="6" fill="#E8E6DF"/>
+    <circle cx="128" y="20" r="6" fill="#E8E6DF"/>
+  </g>
+  
+  <!-- Riba Text -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="80" font-weight="700" fill="#F3F1EA" text-anchor="middle" letter-spacing="-2">Riba</text>
 </svg>

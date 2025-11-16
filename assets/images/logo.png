@@ -1,0 +1,17 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shopping Bag Icon -->
+  <g transform="translate(15, 12)">
+    <!-- Bag body -->
+    <rect x="2" y="8" width="20" height="20" rx="3" fill="#F5F3EB"/>
+    <!-- Bag handle -->
+    <path d="M6 8 Q12 2, 18 8" stroke="#F5F3EB" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Bag top fold -->
+    <rect x="2" y="8" width="20" height="2" fill="#F5F3EB" rx="1"/>
+    <!-- Bag details (rivets) -->
+    <circle cx="6" cy="10" r="1" fill="#E8E6DF"/>
+    <circle cx="18" cy="10" r="1" fill="#E8E6DF"/>
+  </g>
+  
+  <!-- Riba Text -->
+  <text x="55" y="38" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#F5F3EB" letter-spacing="-0.5">Riba</text>
+</svg>

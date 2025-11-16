@@ -28,12 +28,12 @@ function App() {
             <Router>
               <AppShell>
                 <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<HomePage />} />
+                  {/* Public Routes - Auth as entry point */}
+                  <Route path="/" element={<AuthPage />} />
+                  <Route path="/auth" element={<AuthPage />} />
                   <Route path="/store/:slug" element={<StorePage />} />
                   <Route path="/cart" element={<CartPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/auth" element={<AuthPage />} />
                   
                   {/* Protected Routes */}
                   <Route path="/dashboard" element={<DashboardPage />} />
@@ -41,6 +41,9 @@ function App() {
                   <Route path="/orders" element={<OrdersPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/onboarding" element={<OnboardingPage />} />
+                  
+                  {/* Legacy home route - redirect to auth */}
+                  <Route path="/home" element={<HomePage />} />
                 </Routes>
               </AppShell>
             </Router>

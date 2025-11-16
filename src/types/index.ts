@@ -172,6 +172,7 @@ export interface SignupFormData {
   email: string;
   phone?: string;
   password: string;
+  confirmPassword: string;
 }
 
 export interface StoreSetupFormData {

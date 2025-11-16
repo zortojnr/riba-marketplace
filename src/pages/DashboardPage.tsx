@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingCart, TrendingUp, Users, Settings, Plus } from 'lucide-react';
+import { ShareStore } from '@/components/sharing/ShareStore';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -144,7 +145,7 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Recent Orders */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -232,6 +233,19 @@ export const DashboardPage: React.FC = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* Share Store Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <ShareStore 
+              storeName="Demo Store" 
+              storeUrl="https://riba.store/demo-store" 
+              themeColor="#3B82F6"
+            />
+          </motion.div>
         </motion.div>
       </div>
     </div>

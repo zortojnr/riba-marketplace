@@ -44,9 +44,11 @@ export const TopBar: React.FC<TopBarProps> = ({ onMenuToggle, isMenuOpen }) => {
               </button>
             )}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">R</span>
-              </div>
+              <img 
+                src="/assets/images/logo.svg" 
+                alt="RIBA Logo" 
+                className="w-8 h-8 rounded-lg"
+              />
               <span className="text-xl font-bold text-gray-900">RIBA</span>
             </Link>
           </div>

@@ -22,12 +22,11 @@ export const StoreHeader: React.FC<StoreHeaderProps> = ({ store }) => {
               className="h-16 w-16 rounded-lg object-cover"
             />
           ) : (
-            <div
-              className="h-16 w-16 rounded-lg flex items-center justify-center text-white text-2xl font-bold"
-              style={{ backgroundColor: store.themeColor || '#0B6E4F' }}
-            >
-              {store.name.charAt(0).toUpperCase()}
-            </div>
+            <img
+              src="/assets/images/logo.svg"
+              alt="RIBA Store"
+              className="h-16 w-16 rounded-lg object-cover"
+            />
           )}
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{store.name}</h1>
