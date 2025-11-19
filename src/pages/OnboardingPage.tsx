@@ -142,12 +142,15 @@ export const OnboardingPage: React.FC = () => {
       // Simulate API call to save onboarding data
       await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Get the store slug from the form data
+      const storeSlug = storeForm.getValues('slug');
+      
       toast.success('Store setup completed successfully!');
       setCurrentStep(STEPS.COMPLETE);
       
-      // Redirect to home page after a short delay
+      // Redirect to the newly created store page after a short delay
       setTimeout(() => {
-        navigate('/');
+        navigate(`/store/${storeSlug}`);
       }, 2000);
     } catch (error) {
       toast.error('Failed to complete setup. Please try again.');
@@ -176,7 +179,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...businessForm.register('businessName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3 w-full"
+                  className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter your business name"
                 />
               </div>
@@ -271,7 +274,7 @@ export const OnboardingPage: React.FC = () => {
                   <input
                     {...contactForm.register('phone')}
                     type="tel"
-                    className="input pl-10 pr-4 py-3 w-full"
+                    className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter phone number"
                   />
                 </div>
@@ -291,7 +294,7 @@ export const OnboardingPage: React.FC = () => {
                   <input
                     {...contactForm.register('website')}
                     type="url"
-                    className="input pl-10 pr-4 py-3 w-full"
+                    className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="https://yoursite.com"
                   />
                 </div>
@@ -376,7 +379,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...storeForm.register('storeName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3 w-full"
+                  className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter your store name"
                 />
               </div>
@@ -454,7 +457,7 @@ export const OnboardingPage: React.FC = () => {
                 Setup Complete!
               </h2>
               <p className="text-gray-600">
-                Your store is ready. Redirecting to home page...
+                Your store is ready. Redirecting to your new store...
               </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
