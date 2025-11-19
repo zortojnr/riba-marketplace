@@ -53,7 +53,6 @@ function App() {
                         <Route path="/test" element={<ComprehensiveTestSuite />} />
                         
                         {/* Legacy routes */}
-                        <Route path="/home" element={<Navigate to="/" replace />} />
                         <Route path="/login" element={<Navigate to="/auth" replace />} />
                         <Route path="/register" element={<Navigate to="/auth" replace />} />
                       </Routes>
