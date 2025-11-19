@@ -15,7 +15,7 @@ export const MobileBottomNav: React.FC = () => {
     { icon: Home, label: 'Home', path: '/' },
     { icon: ShoppingCart, label: 'Cart', path: '/cart', badge: itemCount },
     { icon: Plus, label: 'Add Product', path: '/products/new', show: !!user },
-    { icon: User, label: 'Profile', path: user ? '/dashboard' : '/auth' },
+    { icon: User, label: 'Profile', path: user ? '/' : '/auth' },
     { icon: Settings, label: 'Settings', path: '/settings', show: !!user },
   ].filter(item => item.show !== false);
 

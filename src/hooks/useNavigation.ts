@@ -16,7 +16,6 @@ export const navigationRoutes: NavigationItem[] = [
   { path: '/store/:slug', label: 'Store', breadcrumb: 'Store' },
   { path: '/cart', label: 'Cart', breadcrumb: 'Shopping Cart', requiresAuth: false },
   { path: '/checkout', label: 'Checkout', breadcrumb: 'Checkout', requiresAuth: true },
-  { path: '/dashboard', label: 'Dashboard', breadcrumb: 'Dashboard', requiresAuth: true },
   { path: '/products', label: 'Products', breadcrumb: 'Products', requiresAuth: true },
   { path: '/orders', label: 'Orders', breadcrumb: 'Orders', requiresAuth: true },
   { path: '/settings', label: 'Settings', breadcrumb: 'Settings', requiresAuth: true },
@@ -69,7 +68,7 @@ export const useNavigation = () => {
   }, [navigate]);
 
   const goBack = useCallback(() => {
-    navigate(-1);
+    navigate('/');
   }, [navigate]);
 
   const canAccessRoute = useCallback((route: NavigationItem, userRole?: string, isAuthenticated = false) => {

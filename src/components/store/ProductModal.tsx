@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { X, Plus, Minus, ShoppingCart, Share2 } from 'lucide-react';
 import type { Product } from '@/types';
 import { formatCurrency } from '@/utils';
+import { ShareProductLink } from '@/components/sharing/ShareProductLink';
 
 interface ProductModalProps {
   product: Product | null;
@@ -19,6 +20,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   if (!product) return null;
 
@@ -60,12 +62,20 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               {/* Header */}
               <div className="flex justify-between items-start mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
-                <button
-                  onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Share2 className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,6 +191,17 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
           </motion.div>
         </motion.div>
+      )}
+      
+      {/* Share Product Modal */}
+      {showShareModal && product && (
+        <ShareProductLink
+          productId={product.id}
+          productName={product.name}
+          businessSlug="demo-store" // This should be dynamic based on current store
+          businessName="Demo Fashion Hub" // This should be dynamic based on current store
+          onClose={() => setShowShareModal(false)}
+        />
       )}
     </AnimatePresence>
   );

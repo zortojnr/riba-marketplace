@@ -19,7 +19,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onMenuToggle, isMenuOpen }) => {
 
   const handleAuthClick = () => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/');
     } else {
       navigate('/auth');
     }
@@ -67,14 +67,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onMenuToggle, isMenuOpen }) => {
             </Link>
             {user && (
               <Link
-                to="/dashboard"
+                to="/"
                 className={`text-sm font-medium transition-colors ${
-                  location.pathname === '/dashboard'
+                  location.pathname === '/'
                     ? 'text-primary-600'
                     : 'text-muted-600 hover:text-primary-600'
                 }`}
               >
-                Dashboard
+                Home
               </Link>
             )}
           </nav>

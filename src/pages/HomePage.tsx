@@ -76,16 +76,18 @@ export const HomePage: React.FC = () => {
             {/* Prominent Auth Buttons - Desktop */}
             <div className="hidden lg:flex items-center space-x-3">
               {user ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
+                <motion.div 
+                  className="flex items-center space-x-3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
                 >
+                  <span className="text-gray-300 text-sm">Welcome back, {user.name}!</span>
                   <Link 
-                    to="/dashboard" 
+                    to="/stores" 
                     className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-6 py-2 font-semibold text-base shadow-lg hover:shadow-emerald-500/40 transition-all duration-500"
                   >
-                    Dashboard
+                    Browse Stores
                   </Link>
                 </motion.div>
               ) : (
@@ -115,10 +117,10 @@ export const HomePage: React.FC = () => {
             <div className="lg:hidden flex items-center space-x-2">
               {user ? (
                 <Link 
-                  to="/dashboard" 
+                  to="/stores" 
                   className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 font-semibold text-xs"
                 >
-                  Dashboard
+                  Browse
                 </Link>
               ) : (
                 <>

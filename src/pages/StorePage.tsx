@@ -9,7 +9,6 @@ import { ProductModal } from '../components/store/ProductModal';
 import { useStore } from '@/contexts/StoreContext';
 import { useCart } from '@/contexts/CartContext';
 import type { Product } from '@/types';
-import BackButton from '@/components/BackButton';
 
 export const StorePage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -48,10 +47,6 @@ export const StorePage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        {/* Back Button */}
-        <div className="absolute top-6 left-6 z-10">
-          <BackButton to="/stores" variant="ghost" />
-        </div>
         
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
@@ -64,10 +59,6 @@ export const StorePage: React.FC = () => {
   if (!currentStore) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        {/* Back Button */}
-        <div className="absolute top-6 left-6 z-10">
-          <BackButton to="/stores" variant="ghost" />
-        </div>
         
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Store Not Found</h2>
@@ -82,10 +73,6 @@ export const StorePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-10">
-        <BackButton to="/stores" variant="ghost" />
-      </div>
       
       <StoreHeader store={currentStore} />
       

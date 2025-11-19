@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Mail, Lock, User, Phone, Eye, EyeOff, Chrome, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Phone, Eye, EyeOff, Chrome } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigationContext } from '@/contexts/NavigationContext';
 import { useNavigation } from '@/hooks/useNavigation';
 
 // Enhanced validation schemas
@@ -46,7 +45,6 @@ export const EnhancedAuthForm: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   
   const { login, signup, loginDemo, isLoading: authLoading } = useAuth();
-  const { goBack } = useNavigationContext();
   const { navigateTo } = useNavigation();
 
   const loginForm = useForm({
@@ -96,9 +94,9 @@ export const EnhancedAuthForm: React.FC = () => {
         password: data.password,
       });
       
-      // Navigate to dashboard or intended route
+      // Navigate to home or intended route
       const returnUrl = new URLSearchParams(window.location.search).get('returnUrl');
-      navigateTo(returnUrl || '/dashboard');
+      navigateTo(returnUrl || '/');
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Login failed. Please try again.');
     } finally {
@@ -165,18 +163,6 @@ export const EnhancedAuthForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back button for mobile */}
-        <div className="mb-4 md:hidden">
-          <button
-            onClick={goBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
-          </button>
-        </div>
-
         {/* Auth Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

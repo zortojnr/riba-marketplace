@@ -9,8 +9,8 @@ import { HomePage } from './pages/HomePage';
 import ProtectedStorePage from './pages/ProtectedStorePage';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
+import { SharedProductPage } from './pages/SharedProductPage';
 
-import { DashboardPage } from './pages/DashboardPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -39,11 +39,11 @@ function App() {
                       <Route path="/" element={<HomePage />} />
                       <Route path="/auth" element={<EnhancedAuthForm />} />
                       <Route path="/store/:slug" element={<ProtectedStorePage />} />
+                      <Route path="/store/:slug/product/:productId" element={<SharedProductPage />} />
                       <Route path="/cart" element={<CartPage />} />
                       <Route path="/checkout" element={<CheckoutPage />} />
                       
                       {/* Protected Routes */}
-                      <Route path="/dashboard" element={<DashboardPage />} />
                       <Route path="/products" element={<ProductsPage />} />
                       <Route path="/orders" element={<OrdersPage />} />
                       <Route path="/settings" element={<SettingsPage />} />

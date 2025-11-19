@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         navigate('/onboarding');
       } else {
         // Customers go directly to browse stores/products
-        navigate('/stores');
+        navigate('/');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user.role === 'owner') {
         navigate('/onboarding');
       } else {
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
@@ -196,7 +196,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       toast.success('Exploring demo mode');
-      navigate('/dashboard');
+      
+      // Redirect based on user role - same as regular login
+      if (demoUser.role === 'owner') {
+        navigate('/onboarding');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Demo login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -210,6 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     apiClient.setToken(null);
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
+    navigate('/');
   };
 
   const clearError = () => {

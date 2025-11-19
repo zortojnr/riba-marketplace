@@ -10,7 +10,8 @@ import {
   FileText,
   Facebook,
   Twitter,
-  MessageCircle
+  MessageCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -412,9 +413,10 @@ export const ShareStore: React.FC<ShareStoreProps> = ({
               <div className="pt-6 border-t border-gray-200">
                 <button
                   onClick={() => setSelectedMethod(null)}
-                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  className="inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-200 border bg-transparent hover:bg-gray-100 text-gray-700 border-transparent text-sm"
                 >
-                  ← Back to sharing options
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to sharing options
                 </button>
               </div>
             </motion.div>

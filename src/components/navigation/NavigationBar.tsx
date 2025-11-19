@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users } from 'lucide-react';
+import { User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigationContext } from '@/contexts/NavigationContext';
 import { Breadcrumb } from './Breadcrumb';
@@ -20,7 +20,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
   };
 
   const navigationItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: Home, requiresAuth: true },
     { path: '/products', label: 'Products', icon: Package, requiresAuth: true },
     { path: '/orders', label: 'Orders', icon: ShoppingCart, requiresAuth: true },
     { path: '/settings', label: 'Settings', icon: Settings, requiresAuth: true },
@@ -28,7 +27,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
 
   // Business owner specific navigation items
   const businessOwnerItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: Home, requiresAuth: true },
     { path: '/products', label: 'Products', icon: Package, requiresAuth: true },
     { path: '/orders', label: 'Orders', icon: ShoppingCart, requiresAuth: true },
     { path: '/analytics', label: 'Analytics', icon: TrendingUp, requiresAuth: true },

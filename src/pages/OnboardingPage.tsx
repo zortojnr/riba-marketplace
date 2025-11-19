@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import BackButton from '@/components/BackButton';
 
 // Validation schemas for each step
 const businessInfoSchema = z.object({
@@ -145,9 +144,9 @@ export const OnboardingPage: React.FC = () => {
       toast.success('Store setup completed successfully!');
       setCurrentStep(STEPS.COMPLETE);
       
-      // Redirect to dashboard after a short delay
+      // Redirect to home page after a short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/');
       }, 2000);
     } catch (error) {
       toast.error('Failed to complete setup. Please try again.');
@@ -454,7 +453,7 @@ export const OnboardingPage: React.FC = () => {
                 Setup Complete!
               </h2>
               <p className="text-gray-600">
-                Your store is ready. Redirecting to dashboard...
+                Your store is ready. Redirecting to home page...
               </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -482,10 +481,6 @@ export const OnboardingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 px-4 py-8">
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-10">
-        <BackButton to="/dashboard" variant="ghost" />
-      </div>
       
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
@@ -586,7 +581,7 @@ export const OnboardingPage: React.FC = () => {
         {/* Skip Option */}
         <div className="text-center mt-6">
           <Link 
-            to="/dashboard" 
+            to="/" 
             className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
           >
             Skip onboarding for now

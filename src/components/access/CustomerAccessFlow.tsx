@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 interface CustomerAccessFlowProps {
   businessSlug: string;
   children: React.ReactNode;
+  productId?: string; // Optional product ID for shared product links
+  sharedLinkToken?: string; // Optional token from shared link
 }
 
 interface BusinessAccess {
@@ -20,7 +22,9 @@ interface BusinessAccess {
 
 export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({ 
   businessSlug, 
-  children 
+  children,
+  productId,
+  sharedLinkToken
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -30,21 +34,29 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
 
   useEffect(() => {
     checkBusinessAccess();
-  }, [businessSlug, user]);
+  }, [businessSlug, user, productId, sharedLinkToken]);
 
   const checkBusinessAccess = async () => {
     try {
       setLoading(true);
       
-      // Simulate API call to check business access
-      // In real implementation, this would call your backend API
-      const response = await simulateBusinessAccessCheck(businessSlug);
-      
-      setAccessStatus(response);
-      
-      // Show access modal if restricted access
-      if (response.accessType === 'restricted') {
-        setShowAccessModal(true);
+      // Check if user is accessing via shared product link
+      if (productId && sharedLinkToken) {
+        const response = await validateSharedProductLink(businessSlug, productId, sharedLinkToken);
+        setAccessStatus(response);
+        
+        if (response.accessType === 'none') {
+          toast.error('This shared product link is invalid or has expired.');
+        }
+      } else {
+        // Regular business access check
+        const response = await simulateBusinessAccessCheck(businessSlug);
+        setAccessStatus(response);
+        
+        // Show access modal if restricted access
+        if (response.accessType === 'restricted') {
+          setShowAccessModal(true);
+        }
       }
       
     } catch (error) {
@@ -62,6 +74,37 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const validateSharedProductLink = async (
+    businessSlug: string, 
+    _productId: string, 
+    token: string
+  ): Promise<BusinessAccess> => {
+    // Simulate API call to validate shared product link
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Mock validation logic for shared product links
+    const validTokens = ['valid-token-123', 'demo-shared-link', 'customer-access-token'];
+    
+    if (validTokens.includes(token)) {
+      return {
+        hasAccess: true,
+        businessId: `${businessSlug}-id`,
+        businessName: `${businessSlug.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
+        isAuthorized: true,
+        accessType: 'full'
+      };
+    }
+    
+    // Invalid or expired token
+    return {
+      hasAccess: false,
+      businessId: '',
+      businessName: 'Unknown Business',
+      isAuthorized: false,
+      accessType: 'none'
+    };
   };
 
   const simulateBusinessAccessCheck = async (slug: string): Promise<BusinessAccess> => {
@@ -102,7 +145,7 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
   };
 
   const handleBrowseSimilar = () => {
-    navigate('/dashboard'); // Redirect to customer dashboard with similar businesses
+    navigate('/'); // Redirect to home page with available stores
   };
 
   if (loading) {
@@ -118,6 +161,12 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
 
   // No access - show restricted message
   if (accessStatus?.accessType === 'none') {
+    const isSharedLink = productId && sharedLinkToken;
+    const errorTitle = isSharedLink ? 'Invalid Shared Link' : 'Access Denied';
+    const errorMessage = isSharedLink 
+      ? 'This shared product link is invalid, expired, or you don\'t have permission to access this product.'
+      : 'The business you\'re trying to access doesn\'t exist or you don\'t have permission to view it.';
+    
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <motion.div 
@@ -129,13 +178,13 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Business Not Found</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{errorTitle}</h3>
             <p className="text-gray-600 mb-6">
-              The business you're trying to access doesn't exist or has been removed.
+              {errorMessage}
             </p>
             <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition-colors"
+              onClick={() => navigate('/')}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-semibold transition-colors"
             >
               Browse Available Stores
             </button>
@@ -180,19 +229,22 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
                     Access Required
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Business owner has to give you access! You can browse products but cannot make purchases.
+                    {productId && sharedLinkToken 
+                      ? 'This shared product link requires additional permission from the business owner. You can browse the product but cannot make purchases until access is granted.'
+                      : 'Business owner has to give you access! You can browse products but cannot make purchases.'
+                    }
                   </p>
                   
                   <div className="space-y-3">
                     <button
                       onClick={handleRequestAccess}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 font-semibold transition-colors"
                     >
                       Request Access
                     </button>
                     <button
                       onClick={handleBrowseSimilar}
-                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold transition-colors"
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 font-semibold transition-colors"
                     >
                       Browse Similar Stores
                     </button>
@@ -218,7 +270,10 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
           <div className="bg-yellow-100 border border-yellow-400 rounded-lg px-4 py-3 flex items-center space-x-2">
             <AlertCircle className="w-5 h-5 text-yellow-600" />
             <span className="text-yellow-800 font-medium">
-              Business owner has to give you access!
+              {productId && sharedLinkToken 
+                ? 'Shared product link requires permission from business owner!'
+                : 'Business owner has to give you access!'
+              }
             </span>
             <button
               onClick={() => setShowAccessModal(true)}

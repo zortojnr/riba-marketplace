@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingCart, TrendingUp, Users, Settings, Plus } from 'lucide-react';
 import { ShareStore } from '@/components/sharing/ShareStore';
-import BackButton from '@/components/BackButton';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -81,10 +80,6 @@ const CustomerDashboardContent: React.FC = () => {
 
   return (
     <div className="customer-dashboard">
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-10">
-        <BackButton to="/" variant="ghost" />
-      </div>
       
       {/* Welcome Section */}
       <motion.div
@@ -317,10 +312,6 @@ const BusinessOwnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-16">
-      {/* Back Button */}
-      <div className="absolute top-6 left-6 z-10">
-        <BackButton to="/" variant="ghost" />
-      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
