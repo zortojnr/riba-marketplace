@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { formatCurrency } from '@/utils';
+import BackButton from '@/components/BackButton';
 
 export const CartPage: React.FC = () => {
   const { items, total, currency, removeFromCart, updateQuantity } = useCart();
@@ -19,6 +20,11 @@ export const CartPage: React.FC = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 pb-16">
+        {/* Back Button */}
+        <div className="absolute top-6 left-6 z-10">
+          <BackButton to="/" variant="ghost" />
+        </div>
+        
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -42,6 +48,11 @@ export const CartPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-16">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton to="/" variant="ghost" />
+      </div>
+      
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

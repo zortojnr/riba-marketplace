@@ -173,6 +173,7 @@ export interface SignupFormData {
   phone?: string;
   password: string;
   confirmPassword: string;
+  role?: 'customer' | 'owner';
 }
 
 export interface StoreSetupFormData {

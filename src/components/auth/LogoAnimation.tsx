@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import { logoAnimationVariants, staggerContainer } from './animationVariants';
+import { 
+  containerVariants, 
+  backgroundVariants, 
+  textVariants, 
+  loadingVariants, 
+  progressBarVariants,
+  staggerContainer 
+} from './animationVariants';
 
 interface LogoAnimationProps {
   onAnimationComplete: () => void;
@@ -37,13 +44,7 @@ export const LogoAnimation: React.FC<LogoAnimationProps> = ({
     }, 500);
   };
 
-  // Use the imported animation variants
-  const logoVariants = logoAnimationVariants.container;
-  const textVariants = logoAnimationVariants.text;
-  const loadingVariants = logoAnimationVariants.loading;
-  const backgroundVariants = logoAnimationVariants.background;
-  const progressBarVariants = logoAnimationVariants.progressBar;
-  const particleVariants = logoAnimationVariants.particle;
+  // Use the imported animation variants directly
 
   if (animationError) {
     return null; // Skip animation on error
@@ -53,7 +54,7 @@ export const LogoAnimation: React.FC<LogoAnimationProps> = ({
     <AnimatePresence mode="wait">
       {isAnimating && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 pointer-events-none"
           variants={backgroundVariants}
           initial="initial"
           animate="animate"
@@ -70,7 +71,7 @@ export const LogoAnimation: React.FC<LogoAnimationProps> = ({
             {/* Logo Container */}
             <motion.div
               className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48"
-              variants={logoVariants}
+              variants={containerVariants}
             >
               {/* Background Circle with Pulsing Effect */}
               <motion.div
@@ -89,7 +90,7 @@ export const LogoAnimation: React.FC<LogoAnimationProps> = ({
               {/* Logo */}
               <div className="relative w-full h-full flex items-center justify-center">
                 <motion.img
-                  src="/assets/images/logo.svg"
+                  src="/assets/images/logo.png"
                   alt="RIBA Logo"
                   className="w-full h-full object-contain drop-shadow-lg"
                   onError={handleAnimationError}

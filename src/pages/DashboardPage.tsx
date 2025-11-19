@@ -4,8 +4,238 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Package, ShoppingCart, TrendingUp, Users, Settings, Plus } from 'lucide-react';
 import { ShareStore } from '@/components/sharing/ShareStore';
+import BackButton from '@/components/BackButton';
 
 export const DashboardPage: React.FC = () => {
+  const { user } = useAuth();
+
+  // Redirect customers to customer dashboard
+  if (user?.role === 'customer') {
+    return <CustomerDashboardContent />;
+  }
+
+  // Business owner dashboard
+  return <BusinessOwnerDashboard />;
+};
+
+const CustomerDashboardContent: React.FC = () => {
+  const { user } = useAuth();
+
+  const featuredStores = [
+    {
+      id: '1',
+      name: 'Amina\'s Fashion Hub',
+      description: 'Latest African fashion and accessories',
+      logo: '/assets/images/store-placeholder.png',
+      rating: 4.8,
+      deliveryTime: '30-45 min',
+      categories: ['Fashion', 'Accessories'],
+    },
+    {
+      id: '2',
+      name: 'Fresh Mart',
+      description: 'Fresh groceries and organic products',
+      logo: '/assets/images/store-placeholder.png',
+      rating: 4.6,
+      deliveryTime: '20-30 min',
+      categories: ['Groceries', 'Organic'],
+    },
+    {
+      id: '3',
+      name: 'Tech Zone',
+      description: 'Latest gadgets and electronics',
+      logo: '/assets/images/store-placeholder.png',
+      rating: 4.9,
+      deliveryTime: '45-60 min',
+      categories: ['Electronics', 'Gadgets'],
+    },
+  ];
+
+  const recentOrders = [
+    {
+      id: '#ORD-001',
+      store: 'Amina\'s Fashion Hub',
+      items: 2,
+      total: '₦15,000',
+      status: 'delivered',
+      date: '2024-01-15',
+    },
+    {
+      id: '#ORD-002',
+      store: 'Fresh Mart',
+      items: 5,
+      total: '₦8,500',
+      status: 'preparing',
+      date: '2024-01-16',
+    },
+  ];
+
+  const quickCategories = [
+    { name: 'Fashion', icon: '🛍️', color: 'bg-pink-100 text-pink-600' },
+    { name: 'Food', icon: '🍔', color: 'bg-orange-100 text-orange-600' },
+    { name: 'Electronics', icon: '💻', color: 'bg-blue-100 text-blue-600' },
+    { name: 'Groceries', icon: '🥬', color: 'bg-green-100 text-green-600' },
+    { name: 'Beauty', icon: '💄', color: 'bg-purple-100 text-purple-600' },
+    { name: 'Home', icon: '🏠', color: 'bg-yellow-100 text-yellow-600' },
+  ];
+
+  return (
+    <div className="customer-dashboard">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton to="/" variant="ghost" />
+      </div>
+      
+      {/* Welcome Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="customer-dashboard__welcome"
+      >
+        <h1 className="customer-dashboard__title">
+          Welcome back, {user?.name?.split(' ')[0]}! 👋
+        </h1>
+        <p className="customer-dashboard__subtitle">
+          Discover amazing products from local businesses
+        </p>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="customer-dashboard__actions"
+      >
+        <Link to="/stores" className="customer-dashboard__action-button customer-dashboard__action-button--primary">
+          🛍️ Browse Stores
+        </Link>
+        <Link to="/orders" className="customer-dashboard__action-button customer-dashboard__action-button--secondary">
+          📋 My Orders
+        </Link>
+        <Link to="/favorites" className="customer-dashboard__action-button customer-dashboard__action-button--secondary">
+          ❤️ Favorites
+        </Link>
+      </motion.div>
+
+      {/* Quick Categories */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="customer-dashboard__categories"
+      >
+        <h2 className="customer-dashboard__section-title">Shop by Category</h2>
+        <div className="customer-dashboard__category-grid">
+          {quickCategories.map((category, index) => (
+            <motion.div
+              key={category.name}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              className="customer-dashboard__category-card"
+            >
+              <div className={`customer-dashboard__category-icon ${category.color}`}>
+                <span className="text-2xl">{category.icon}</span>
+              </div>
+              <span className="customer-dashboard__category-name">{category.name}</span>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Featured Stores */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="customer-dashboard__stores"
+      >
+        <div className="customer-dashboard__stores-header">
+          <h2 className="customer-dashboard__section-title">Featured Stores</h2>
+          <Link to="/stores" className="customer-dashboard__view-all">
+            View all stores →
+          </Link>
+        </div>
+        <div className="customer-dashboard__store-grid">
+          {featuredStores.map((store, index) => (
+            <motion.div
+              key={store.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+              whileHover={{ y: -4 }}
+              className="customer-dashboard__store-card"
+            >
+              <div className="customer-dashboard__store-image">
+                <img 
+                  src={store.logo} 
+                  alt={store.name} 
+                  className="customer-dashboard__store-logo"
+                />
+              </div>
+              <div className="customer-dashboard__store-info">
+                <h3 className="customer-dashboard__store-name">{store.name}</h3>
+                <p className="customer-dashboard__store-description">{store.description}</p>
+                <div className="customer-dashboard__store-meta">
+                  <div className="customer-dashboard__store-rating">
+                    <span className="customer-dashboard__store-rating-text">⭐ {store.rating}</span>
+                  </div>
+                  <div className="customer-dashboard__store-delivery">
+                    <span className="customer-dashboard__store-delivery-text">🕒 {store.deliveryTime}</span>
+                  </div>
+                </div>
+                <div className="customer-dashboard__store-categories">
+                  {store.categories.map((category) => (
+                    <span key={category} className="customer-dashboard__store-category">
+                      {category}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Recent Orders */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="customer-dashboard__orders"
+      >
+        <div className="customer-dashboard__orders-header">
+          <h2 className="customer-dashboard__section-title">Recent Orders</h2>
+          <Link to="/orders" className="customer-dashboard__view-all">
+            View all orders →
+          </Link>
+        </div>
+        <div className="customer-dashboard__order-list">
+          {recentOrders.map((order) => (
+            <div key={order.id} className="customer-dashboard__order-card">
+              <div className="customer-dashboard__order-info">
+                <div className="customer-dashboard__order-store">{order.store}</div>
+                <div className="customer-dashboard__order-details">
+                  {order.items} items • {order.total}
+                </div>
+                <div className="customer-dashboard__order-date">{order.date}</div>
+              </div>
+              <div className="customer-dashboard__order-status">
+                <span className={`customer-dashboard__order-status-badge customer-dashboard__order-status-badge--${order.status}`}>
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const BusinessOwnerDashboard = () => {
   const { user } = useAuth();
 
   const stats = [
@@ -46,21 +276,21 @@ export const DashboardPage: React.FC = () => {
   const recentOrders = [
     {
       id: '#ORD-001',
-      customer: 'John Doe',
+      customer: 'Amina Bello',
       amount: '₦15,000',
       status: 'pending',
       date: '2024-01-15',
     },
     {
       id: '#ORD-002',
-      customer: 'Jane Smith',
+      customer: 'Usman Abdullahi',
       amount: '₦8,500',
       status: 'confirmed',
       date: '2024-01-14',
     },
     {
       id: '#ORD-003',
-      customer: 'Mike Johnson',
+      customer: 'Hafsa Aliyu',
       amount: '₦22,000',
       status: 'delivered',
       date: '2024-01-13',
@@ -69,17 +299,17 @@ export const DashboardPage: React.FC = () => {
 
   const topProducts = [
     {
-      name: 'Jollof Rice',
+      name: 'Tuwo Shinkafa',
       sales: 45,
       revenue: '₦67,500',
     },
     {
-      name: 'Fried Chicken',
+      name: 'Suya',
       sales: 32,
       revenue: '₦48,000',
     },
     {
-      name: 'Plantain',
+      name: 'Dambu Nama',
       sales: 28,
       revenue: '₦14,000',
     },
@@ -87,6 +317,11 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-16">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton to="/" variant="ghost" />
+      </div>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -100,6 +335,12 @@ export const DashboardPage: React.FC = () => {
             <p className="text-gray-600">
               Here's what's happening with your store today.
             </p>
+            {user?.email === 'demo@riba.local' && (
+              <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-700">
+                <span>Demo Mode</span>
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}

@@ -8,6 +8,7 @@ interface AuthContextType extends AuthState {
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignupFormData) => Promise<void>;
   googleLogin: (token: string) => Promise<void>;
+  loginDemo: () => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -98,11 +99,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success('Login successful!');
       
-      // Redirect to onboarding for new users, dashboard for existing users
+      // Redirect based on user role and store setup status
       if (user.role === 'owner') {
         navigate('/onboarding');
       } else {
-        navigate('/dashboard');
+        // Customers go directly to browse stores/products
+        navigate('/stores');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
@@ -114,7 +116,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (data: SignupFormData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await apiClient.signup(data);
+      const signupData = {
+        ...data,
+        role: data.role || 'customer'
+      };
+      const response = await apiClient.signup(signupData);
       const { user, token } = response.data as { user: User; token: string };
       
       localStorage.setItem('riba_token', token);
@@ -128,8 +134,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success('Account created successfully!');
       
-      // Always redirect to onboarding after signup
-      navigate('/onboarding');
+      // Redirect based on user role
+      if (user.role === 'owner') {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -160,6 +170,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginDemo = async () => {
+    dispatch({ type: 'AUTH_START' });
+    try {
+      const demoUser: User = {
+        id: 'demo-user-001',
+        email: 'demo@riba.local',
+        phone: '+2348000000000',
+        name: 'Demo User',
+        avatar: undefined,
+        role: 'owner',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const demoToken = 'demo-token';
+
+      localStorage.setItem('riba_token', demoToken);
+      localStorage.setItem('riba_user', JSON.stringify(demoUser));
+      apiClient.setToken(demoToken);
+
+      dispatch({
+        type: 'AUTH_SUCCESS',
+        payload: { user: demoUser, token: demoToken },
+      });
+
+      toast.success('Exploring demo mode');
+      navigate('/dashboard');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Demo login failed';
+      dispatch({ type: 'AUTH_FAILURE', payload: message });
+      toast.error(message);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('riba_token');
     localStorage.removeItem('riba_user');
@@ -177,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     signup,
     googleLogin,
+    loginDemo,
     logout,
     clearError,
   };

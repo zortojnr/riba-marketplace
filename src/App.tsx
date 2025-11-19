@@ -1,17 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { AppShell } from './components/layout/AppShell';
+import { NavigationProvider } from './contexts/NavigationContext';
+import { NavigationBar } from './components/navigation/NavigationBar';
+import { EnhancedAuthForm } from './components/auth/EnhancedAuthForm';
 import { HomePage } from './pages/HomePage';
-import { StorePage } from './pages/StorePage';
+import ProtectedStorePage from './pages/ProtectedStorePage';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
-import { AuthPage } from './pages/AuthPage';
+
 import { DashboardPage } from './pages/DashboardPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { ComprehensiveTestSuite } from './components/testing/ComprehensiveTestSuite';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { StoreProvider } from './contexts/StoreContext';
@@ -21,49 +25,57 @@ function App() {
   useServiceWorker(); // Initialize service worker for PWA functionality
   
   return (
-    <AuthProvider>
-      <StoreProvider>
-        <CartProvider>
-          <NotificationProvider>
-            <Router>
-              <AppShell>
-                <Routes>
-                  {/* Public Routes - Auth as entry point */}
-                  <Route path="/" element={<AuthPage />} />
-                  <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/store/:slug" element={<StorePage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  
-                  {/* Protected Routes */}
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/orders" element={<OrdersPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/onboarding" element={<OnboardingPage />} />
-                  
-                  {/* Legacy home route - redirect to auth */}
-                  <Route path="/home" element={<HomePage />} />
-                </Routes>
-              </AppShell>
-            </Router>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: '#ffffff',
-                  color: '#111827',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  padding: '16px',
-                },
-              }}
-            />
-          </NotificationProvider>
-        </CartProvider>
-      </StoreProvider>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <NavigationProvider>
+          <StoreProvider>
+            <CartProvider>
+              <NotificationProvider>
+                <div className="min-h-screen bg-gray-50">
+                  <NavigationBar />
+                  <AppShell>
+                    <Routes>
+                      {/* Public Routes - Landing as entry point */}
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/auth" element={<EnhancedAuthForm />} />
+                      <Route path="/store/:slug" element={<ProtectedStorePage />} />
+                      <Route path="/cart" element={<CartPage />} />
+                      <Route path="/checkout" element={<CheckoutPage />} />
+                      
+                      {/* Protected Routes */}
+                      <Route path="/dashboard" element={<DashboardPage />} />
+                      <Route path="/products" element={<ProductsPage />} />
+                      <Route path="/orders" element={<OrdersPage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/onboarding" element={<OnboardingPage />} />
+                      <Route path="/test" element={<ComprehensiveTestSuite />} />
+                      
+                      {/* Legacy routes */}
+                      <Route path="/home" element={<Navigate to="/" replace />} />
+                      <Route path="/login" element={<Navigate to="/auth" replace />} />
+                      <Route path="/register" element={<Navigate to="/auth" replace />} />
+                    </Routes>
+                  </AppShell>
+                  <Toaster
+                    position="top-right"
+                    toastOptions={{
+                      duration: 4000,
+                      style: {
+                        background: '#ffffff',
+                        color: '#111827',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        padding: '16px',
+                      },
+                    }}
+                  />
+                </div>
+              </NotificationProvider>
+            </CartProvider>
+          </StoreProvider>
+        </NavigationProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

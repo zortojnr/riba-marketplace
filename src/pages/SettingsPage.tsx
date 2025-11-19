@@ -1,9 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import BackButton from '@/components/BackButton';
 
 export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <div className="mb-4">
+        <BackButton to="/dashboard" variant="ghost" />
+      </div>
+      
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-muted-foreground">Configure your store preferences</p>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Filter, Package } from 'lucide-react';
 import { useStore } from '@/contexts/StoreContext';
@@ -6,6 +7,7 @@ import type { Order } from '@/types';
 import { apiClient } from '@/utils/api';
 import { formatCurrency } from '@/utils';
 import { toast } from 'sonner';
+import BackButton from '@/components/BackButton';
 
 export const OrdersPage: React.FC = () => {
   const { currentStore } = useStore();
@@ -17,6 +19,8 @@ export const OrdersPage: React.FC = () => {
   useEffect(() => {
     if (currentStore?.id) {
       fetchOrders();
+    } else {
+      setLoading(false);
     }
   }, [currentStore?.id]);
 
@@ -73,8 +77,32 @@ export const OrdersPage: React.FC = () => {
     );
   }
 
+  if (!currentStore?.id) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+        {/* Back Button */}
+        <div className="mb-6 text-left">
+          <BackButton to="/dashboard" variant="ghost" />
+        </div>
+        
+        <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No store selected</h3>
+        <p className="text-gray-600 mb-6">Select or create a store to start managing orders.</p>
+        <div className="flex items-center justify-center gap-4">
+          <Link to="/onboarding" className="btn btn-primary">Create store</Link>
+          <Link to="/dashboard" className="btn btn-outline">Go to dashboard</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Back Button */}
+      <div className="mb-6">
+        <BackButton to="/dashboard" variant="ghost" />
+      </div>
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
         <p className="text-gray-600">Manage your store orders and track their status</p>

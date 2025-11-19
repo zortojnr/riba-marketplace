@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import type { CheckoutFormData } from '@/types';
 import { formatCurrency } from '@/utils';
 import { toast } from 'sonner';
+import BackButton from '@/components/BackButton';
 
 const checkoutSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -76,6 +77,11 @@ export const CheckoutPage: React.FC = () => {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 pb-16">
+        {/* Back Button */}
+        <div className="absolute top-6 left-6 z-10">
+          <BackButton to="/" variant="ghost" />
+        </div>
+        
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -95,6 +101,11 @@ export const CheckoutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-16">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton to="/cart" variant="ghost" />
+      </div>
+      
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

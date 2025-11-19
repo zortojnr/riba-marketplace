@@ -23,7 +23,7 @@ export const StoreHeader: React.FC<StoreHeaderProps> = ({ store }) => {
             />
           ) : (
             <img
-              src="/assets/images/logo.svg"
+              src="/assets/images/logo.png"
               alt="RIBA Store"
               className="h-16 w-16 rounded-lg object-cover"
             />

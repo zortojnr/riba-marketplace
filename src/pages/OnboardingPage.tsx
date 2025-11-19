@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import BackButton from '@/components/BackButton';
 
 // Validation schemas for each step
 const businessInfoSchema = z.object({
@@ -481,6 +482,11 @@ export const OnboardingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 px-4 py-8">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton to="/dashboard" variant="ghost" />
+      </div>
+      
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
         <div className="mb-8">

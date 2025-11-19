@@ -8,6 +8,7 @@ import { formatCurrency } from '@/utils';
 import ProductModal from '@/components/products/ProductModal';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
+import BackButton from '@/components/BackButton';
 
 const ProductsPage: React.FC = () => {
   const { currentStore } = useStore();
@@ -177,6 +178,11 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <div className="mb-4">
+        <BackButton to="/dashboard" variant="ghost" />
+      </div>
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>

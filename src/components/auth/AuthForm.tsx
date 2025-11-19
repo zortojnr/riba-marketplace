@@ -19,6 +19,7 @@ const signupSchema = z.object({
   phone: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string().min(6, 'Please confirm your password'),
+  role: z.enum(['customer', 'owner']).default('customer'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -31,7 +32,7 @@ export const AuthForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordMatch, setPasswordMatch] = useState<boolean | null>(null);
-  const { login, signup, isLoading, error } = useAuth();
+  const { login, signup, loginDemo, isLoading, error } = useAuth();
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -84,46 +85,52 @@ export const AuthForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 flex items-center justify-center px-4 py-8">
+    <div className="auth">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="auth__container"
       >
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-2xl mb-4">
+        <div className="auth__card">
+          <div className="auth__header">
+            <div className="auth__logo">
               <img 
-                src="/assets/images/logo-transparent.svg" 
+                src="/assets/images/logo.png" 
                 alt="RIBA Logo" 
-                className="h-8 w-8"
+                className="auth__logo-image"
               />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="auth__title">
               {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
             </h1>
-            <p className="text-gray-600">
+            <p className="auth__subtitle">
               {mode === 'login' ? 'Sign in to manage your store' : 'Start your journey with RIBA'}
             </p>
           </div>
 
-          {/* Google Sign In Button */}
-          <div className="mb-6">
-            <button
-              onClick={handleGoogleSignIn}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors duration-200 font-medium text-gray-700"
-            >
-              <Chrome className="h-5 w-5 text-blue-500" />
-              Continue with Google
-            </button>
+          {/* Social & Demo Actions */}
+          <div className="auth__social">
+            <div style={{ display: 'grid', gap: '12px' }}>
+              <button
+                onClick={handleGoogleSignIn}
+                className="auth__social-button"
+              >
+                <Chrome className="auth__social-icon" />
+                Continue with Google
+              </button>
+              <button
+                type="button"
+                onClick={loginDemo}
+                className="auth__demo-button"
+                aria-label="Try demo as Amina Bello"
+              >
+                <span aria-hidden>🚀</span>
+                Try Demo (Amina Bello)
+              </button>
+            </div>
             
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">or continue with email</span>
-              </div>
+            <div className="auth__divider">
+              <span className="auth__divider-text">or continue with email</span>
             </div>
           </div>
 
@@ -135,61 +142,75 @@ export const AuthForm: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 onSubmit={loginForm.handleSubmit(handleLogin)}
-                className="space-y-6"
+                className="auth__form"
               >
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="auth__form-group">
+                  <label htmlFor="email" className="auth__label">
                     Email Address
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <div className="auth__input-wrapper">
+                    <Mail className="auth__icon" aria-hidden="true" />
                     <input
                       {...loginForm.register('email')}
                       type="email"
                       id="email"
-                      className="input pl-10 pr-4 py-3"
+                      className="auth__input"
                       placeholder="Enter your email"
                       autoComplete="email"
+                      aria-describedby="email-error"
+                      aria-invalid={!!loginForm.formState.errors.email}
+                      required
                     />
                   </div>
                   {loginForm.formState.errors.email && (
                     <motion.p
+                      id="email-error"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 text-sm text-red-600"
+                      className="auth__error-message"
+                      role="alert"
+                      aria-live="polite"
                     >
                       {loginForm.formState.errors.email.message}
                     </motion.p>
                   )}
                 </div>
 
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="auth__form-group">
+                  <label htmlFor="password" className="auth__label">
                     Password
                   </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <div className="auth__input-wrapper">
+                    <Lock className="auth__icon" aria-hidden="true" />
                     <input
                       {...loginForm.register('password')}
                       type={showPassword ? 'text' : 'password'}
                       id="password"
-                      className="input pl-10 pr-12 py-3"
+                      className="auth__input"
                       placeholder="Enter your password"
                       autoComplete="current-password"
+                      aria-describedby="password-error"
+                      aria-invalid={!!loginForm.formState.errors.password}
+                      required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="auth__toggle-password"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? <EyeOff className="auth__icon auth__icon--small" /> : <Eye className="auth__icon auth__icon--small" />}
                     </button>
                   </div>
                   {loginForm.formState.errors.password && (
                     <motion.p
+                      id="password-error"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 text-sm text-red-600"
+                      className="auth__error-message"
+                      role="alert"
+                      aria-live="polite"
                     >
                       {loginForm.formState.errors.password.message}
                     </motion.p>
@@ -200,22 +221,26 @@ export const AuthForm: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-red-50 border border-red-200 rounded-lg p-4"
+                    className="auth__error"
+                    role="alert"
+                    aria-live="assertive"
                   >
-                    <p className="text-sm text-red-600">{error}</p>
+                    <p className="auth__error-text">{error}</p>
                   </motion.div>
                 )}
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full btn btn-primary py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
+                  className={`auth__submit ${isLoading ? 'auth__submit--loading' : ''}`}
+                  aria-busy={isLoading}
+                  aria-label={isLoading ? 'Signing in, please wait' : 'Sign in to your account'}
                 >
                   {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Signing in...
-                    </span>
+                    <>
+                      <div className="auth__spinner" aria-hidden="true" />
+                      <span aria-label="Signing in">Signing in...</span>
+                    </>
                   ) : (
                     'Sign In'
                   )}
@@ -228,20 +253,20 @@ export const AuthForm: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 onSubmit={signupForm.handleSubmit(handleSignup)}
-                className="space-y-6"
+                className="auth__form"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="auth__form-row">
+                  <div className="auth__form-group">
+                    <label htmlFor="name" className="auth__label">
                       Full Name *
                     </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <div className="auth__input-wrapper">
+                      <User className="auth__icon" />
                       <input
                         {...signupForm.register('name')}
                         type="text"
                         id="name"
-                        className="input pl-10 pr-4 py-3"
+                        className="auth__input"
                         placeholder="Enter your name"
                         autoComplete="name"
                       />
@@ -250,24 +275,24 @@ export const AuthForm: React.FC = () => {
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-600"
+                        className="auth__error-message"
                       >
                         {signupForm.formState.errors.name.message}
                       </motion.p>
                     )}
                   </div>
 
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="auth__form-group">
+                    <label htmlFor="phone" className="auth__label">
                       Phone Number
                     </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <div className="auth__input-wrapper">
+                      <Phone className="auth__icon" />
                       <input
                         {...signupForm.register('phone')}
                         type="tel"
                         id="phone"
-                        className="input pl-10 pr-4 py-3"
+                        className="auth__input"
                         placeholder="Enter phone (optional)"
                         autoComplete="tel"
                       />
@@ -276,7 +301,7 @@ export const AuthForm: React.FC = () => {
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-600"
+                        className="auth__error-message"
                       >
                         {signupForm.formState.errors.phone.message}
                       </motion.p>
@@ -284,17 +309,17 @@ export const AuthForm: React.FC = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="auth__field">
+                  <label htmlFor="email" className="auth__label">
                     Email Address *
                   </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <div className="auth__input-wrapper">
+                    <Mail className="auth__icon" />
                     <input
                       {...signupForm.register('email')}
                       type="email"
                       id="email"
-                      className="input pl-10 pr-4 py-3"
+                      className="auth__input"
                       placeholder="Enter your email"
                       autoComplete="email"
                     />
@@ -303,25 +328,62 @@ export const AuthForm: React.FC = () => {
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-2 text-sm text-red-600"
+                      className="auth__error-message"
                     >
                       {signupForm.formState.errors.email.message}
                     </motion.p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="auth__form-group">
+                  <label className="auth__label">
+                    I am signing up as *
+                  </label>
+                  <div className="auth__radio-group" style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
+                    <label className="auth__radio-label" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <input
+                        {...signupForm.register('role')}
+                        type="radio"
+                        value="customer"
+                        className="auth__radio-input"
+                        style={{ marginRight: '8px' }}
+                      />
+                      <span>Customer (Shop & Order)</span>
+                    </label>
+                    <label className="auth__radio-label" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <input
+                        {...signupForm.register('role')}
+                        type="radio"
+                        value="owner"
+                        className="auth__radio-input"
+                        style={{ marginRight: '8px' }}
+                      />
+                      <span>Business Owner (Sell Products)</span>
+                    </label>
+                  </div>
+                  {signupForm.formState.errors.role && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="auth__error-message"
+                    >
+                      {signupForm.formState.errors.role.message}
+                    </motion.p>
+                  )}
+                </div>
+
+                <div className="auth__form-row">
+                  <div className="auth__form-group">
+                    <label htmlFor="password" className="auth__label">
                       Password *
                     </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <div className="auth__input-wrapper">
+                      <Lock className="auth__icon" />
                       <input
                         {...signupForm.register('password')}
                         type={showPassword ? 'text' : 'password'}
                         id="password"
-                        className="input pl-10 pr-12 py-3"
+                        className="auth__input"
                         placeholder="Create password"
                         autoComplete="new-password"
                         onChange={() => {
@@ -332,33 +394,34 @@ export const AuthForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="auth__toggle-password"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? <EyeOff className="auth__icon auth__icon--small" /> : <Eye className="auth__icon auth__icon--small" />}
                       </button>
                     </div>
                     {signupForm.formState.errors.password && (
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-600"
+                        className="auth__error-message"
                       >
                         {signupForm.formState.errors.password.message}
                       </motion.p>
                     )}
                   </div>
 
-                  <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="auth__form-group">
+                    <label htmlFor="confirmPassword" className="auth__label">
                       Confirm Password *
                     </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                    <div className="auth__input-wrapper">
+                      <Lock className="auth__icon" />
                       <input
                         {...signupForm.register('confirmPassword')}
                         type={showConfirmPassword ? 'text' : 'password'}
                         id="confirmPassword"
-                        className="input pl-10 pr-12 py-3"
+                        className="auth__input"
                         placeholder="Confirm password"
                         autoComplete="new-password"
                         onChange={checkPasswordMatch}
@@ -366,16 +429,17 @@ export const AuthForm: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="auth__toggle-password"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showConfirmPassword ? <EyeOff className="auth__icon auth__icon--small" /> : <Eye className="auth__icon auth__icon--small" />}
                       </button>
                       {passwordMatch !== null && (
-                        <div className="absolute right-10 top-3.5">
+                        <div className="auth__validation-icon">
                           {passwordMatch ? (
-                            <Check className="h-5 w-5 text-green-500" />
+                            <Check className="auth__icon auth__icon--small auth__icon--success" />
                           ) : (
-                            <X className="h-5 w-5 text-red-500" />
+                            <X className="auth__icon auth__icon--small auth__icon--error" />
                           )}
                         </div>
                       )}
@@ -384,7 +448,7 @@ export const AuthForm: React.FC = () => {
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-red-600"
+                        className="auth__error-message"
                       >
                         {signupForm.formState.errors.confirmPassword.message}
                       </motion.p>
@@ -393,7 +457,7 @@ export const AuthForm: React.FC = () => {
                       <motion.p
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="mt-2 text-sm text-green-600"
+                        className="auth__success-message"
                       >
                         Passwords match!
                       </motion.p>
@@ -405,22 +469,22 @@ export const AuthForm: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-red-50 border border-red-200 rounded-lg p-4"
+                    className="auth__error"
                   >
-                    <p className="text-sm text-red-600">{error}</p>
+                    <p className="auth__error-text">{error}</p>
                   </motion.div>
                 )}
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full btn btn-primary py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
+                  className={`auth__submit ${isLoading ? 'auth__submit--loading' : ''}`}
                 >
                   {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <>
+                      <div className="auth__spinner" />
                       Creating account...
-                    </span>
+                    </>
                   ) : (
                     'Create Account'
                   )}
@@ -429,19 +493,19 @@ export const AuthForm: React.FC = () => {
             )}
           </AnimatePresence>
 
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="auth__toggle">
+            <p className="auth__toggle-text">
               {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
               <button
                 onClick={toggleMode}
-                className="ml-1 text-primary-600 hover:text-primary-500 font-medium transition-colors"
+                className="auth__toggle-link"
               >
                 {mode === 'login' ? 'Sign up' : 'Sign in'}
               </button>
             </p>
             
             {mode === 'signup' && (
-              <p className="mt-4 text-xs text-gray-500">
+              <p className="auth__legal">
                 By creating an account, you agree to our Terms of Service and Privacy Policy
               </p>
             )}
