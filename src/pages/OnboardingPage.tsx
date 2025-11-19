@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
 
 // Validation schemas for each step
 const businessInfoSchema = z.object({
@@ -175,7 +176,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...businessForm.register('businessName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3"
+                  className="input pl-10 pr-4 py-3 w-full"
                   placeholder="Enter your business name"
                 />
               </div>
@@ -236,7 +237,7 @@ export const OnboardingPage: React.FC = () => {
               <textarea
                 {...businessForm.register('description')}
                 rows={4}
-                className="input resize-none"
+                className="input resize-none w-full"
                 placeholder="Tell us about your business..."
               />
               {businessForm.formState.errors.description && (
@@ -270,8 +271,8 @@ export const OnboardingPage: React.FC = () => {
                   <input
                     {...contactForm.register('phone')}
                     type="tel"
-                    className="input pl-10 pr-4 py-3"
-                    placeholder="+234..."
+                    className="input pl-10 pr-4 py-3 w-full"
+                  placeholder="Enter phone number"
                   />
                 </div>
                 {contactForm.formState.errors.phone && (
@@ -290,8 +291,8 @@ export const OnboardingPage: React.FC = () => {
                   <input
                     {...contactForm.register('website')}
                     type="url"
-                    className="input pl-10 pr-4 py-3"
-                    placeholder="https://..."
+                    className="input pl-10 pr-4 py-3 w-full"
+                  placeholder="https://yoursite.com"
                   />
                 </div>
                 {contactForm.formState.errors.website && (
@@ -309,7 +310,7 @@ export const OnboardingPage: React.FC = () => {
               <textarea
                 {...contactForm.register('address')}
                 rows={3}
-                className="input resize-none"
+                className="input resize-none w-full"
                 placeholder="Enter your business address..."
               />
               {contactForm.formState.errors.address && (
@@ -327,7 +328,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...contactForm.register('city')}
                   type="text"
-                  className="input px-4 py-3"
+                  className="input px-4 py-3 w-full"
                   placeholder="Enter city"
                 />
                 {contactForm.formState.errors.city && (
@@ -344,7 +345,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...contactForm.register('state')}
                   type="text"
-                  className="input px-4 py-3"
+                  className="input px-4 py-3 w-full"
                   placeholder="Enter state"
                 />
                 {contactForm.formState.errors.state && (
@@ -375,7 +376,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...storeForm.register('storeName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3"
+                  className="input pl-10 pr-4 py-3 w-full"
                   placeholder="Enter your store name"
                 />
               </div>
@@ -397,7 +398,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...storeForm.register('slug')}
                   type="text"
-                  className="input rounded-l-none flex-1"
+                  className="input rounded-l-none flex-1 w-full"
                   placeholder="your-store-name"
                 />
               </div>
@@ -424,7 +425,7 @@ export const OnboardingPage: React.FC = () => {
                 <input
                   {...storeForm.register('themeColor')}
                   type="text"
-                  className="input flex-1"
+                  className="input flex-1 w-full"
                   placeholder="#3B82F6"
                 />
               </div>
@@ -481,8 +482,8 @@ export const OnboardingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-accent-50 px-4 py-8">
-      
-      <div className="max-w-4xl mx-auto">
+      <OnboardingHeader />
+      <div className="max-w-4xl mx-auto pt-20">
         {/* Progress Steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

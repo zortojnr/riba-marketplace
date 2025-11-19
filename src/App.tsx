@@ -15,6 +15,7 @@ import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { ComprehensiveTestSuite } from './components/testing/ComprehensiveTestSuite';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -44,6 +45,7 @@ function App() {
                         <Route path="/checkout" element={<CheckoutPage />} />
                         
                         {/* Protected Routes */}
+                        <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/products" element={<ProductsPage />} />
                         <Route path="/orders" element={<OrdersPage />} />
                         <Route path="/settings" element={<SettingsPage />} />

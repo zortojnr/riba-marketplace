@@ -103,8 +103,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user.role === 'owner') {
         navigate('/onboarding');
       } else {
-        // Customers go directly to browse stores/products
-        navigate('/');
+        // Customers go to their dedicated dashboard
+        navigate('/dashboard');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
@@ -138,7 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user.role === 'owner') {
         navigate('/onboarding');
       } else {
-        navigate('/');
+        // Customers go to their dedicated dashboard
+        navigate('/dashboard');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
@@ -201,7 +202,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (demoUser.role === 'owner') {
         navigate('/onboarding');
       } else {
-        navigate('/');
+        // Customers go to their dedicated dashboard
+        navigate('/dashboard');
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Demo login failed';
