@@ -1,7 +1,7 @@
 # RIBA - Quick Menu & Cart Creator
 
 <div align="center">
-  <img src="assets/images/logo.svg" alt="RIBA Logo" width="200"/>
+  <img src="assets/images/logo.png" alt="RIBA Logo" width="200"/>
   
   ### Mobile-first store builder for Nigerian businesses
   
