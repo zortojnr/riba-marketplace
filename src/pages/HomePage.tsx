@@ -75,69 +75,41 @@ export const HomePage: React.FC = () => {
 
             {/* Prominent Auth Buttons - Desktop */}
             <div className="hidden lg:flex items-center space-x-3">
-              {user ? (
-                <motion.div 
-                  className="flex items-center space-x-3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
+              <motion.div 
+                className="flex items-center space-x-3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link 
+                  to="/auth" 
+                  className="px-4 py-2 text-gray-100 hover:text-white transition-all duration-300 font-medium text-base border border-gray-600 hover:border-emerald-500 drop-shadow-sm"
                 >
-                  <span className="text-gray-300 text-sm">Welcome back, {user.name}!</span>
-                  <Link 
-                    to="/stores" 
-                    className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-6 py-2 font-semibold text-base shadow-lg hover:shadow-emerald-500/40 transition-all duration-500"
-                  >
-                    Browse Stores
-                  </Link>
-                </motion.div>
-              ) : (
-                <motion.div 
-                  className="flex items-center space-x-3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
+                  Sign In
+                </Link>
+                <Link 
+                  to="/auth" 
+                  className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-6 py-2 font-semibold text-base shadow-lg hover:shadow-emerald-500/40 transition-all duration-500 border border-emerald-400 drop-shadow-sm"
                 >
-                  <Link 
-                    to="/auth" 
-                    className="px-4 py-2 text-gray-100 hover:text-white transition-all duration-300 font-medium text-base border border-gray-600 hover:border-emerald-500 drop-shadow-sm"
-                  >
-                    Sign In
-                  </Link>
-                  <Link 
-                    to="/auth" 
-                    className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-6 py-2 font-semibold text-base shadow-lg hover:shadow-emerald-500/40 transition-all duration-500 border border-emerald-400 drop-shadow-sm"
-                  >
-                    Sign Up Free
-                  </Link>
-                </motion.div>
-              )}
+                  Sign Up Free
+                </Link>
+              </motion.div>
             </div>
 
             {/* Mobile Auth Buttons */}
             <div className="lg:hidden flex items-center space-x-2">
-              {user ? (
-                <Link 
-                  to="/stores" 
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 font-semibold text-xs"
-                >
-                  Browse
-                </Link>
-              ) : (
-                <>
-                  <Link 
-                    to="/auth" 
-                    className="px-3 py-1.5 text-gray-100 hover:text-white transition-all duration-300 font-medium text-xs border border-gray-600 hover:border-emerald-500"
-                  >
-                    Sign In
-                  </Link>
-                  <Link 
-                    to="/auth" 
-                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 font-semibold text-xs"
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
+              <Link 
+                to="/auth" 
+                className="px-3 py-1.5 text-gray-100 hover:text-white transition-all duration-300 font-medium text-xs border border-gray-600 hover:border-emerald-500"
+              >
+                Sign In
+              </Link>
+              <Link 
+                to="/auth" 
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 font-semibold text-xs"
+              >
+                Sign Up
+              </Link>
             </div>
           </div>
         </div>

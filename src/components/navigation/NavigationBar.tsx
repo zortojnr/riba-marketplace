@@ -65,7 +65,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
               <ArrowLeft className="w-5 h-5" />
             </button>
             
-            <Link to={user ? "/dashboard" : "/"} className="flex items-center" aria-label="RIBA Home">
+            <Link to="/" className="flex items-center" aria-label="RIBA Home">
               <img 
                 src="/assets/images/logo.png" 
                 alt="RIBA" 
