@@ -1,0 +1,21 @@
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { NavigationBar } from '../navigation/NavigationBar';
+
+interface LayoutWrapperProps {
+  children: React.ReactNode;
+}
+
+export const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
+  const location = useLocation();
+  
+  // Don't show navigation bar on auth pages
+  const shouldShowNavBar = !location.pathname.startsWith('/auth');
+  
+  return (
+    <>
+      {shouldShowNavBar && <NavigationBar />}
+      {children}
+    </>
+  );
+};

@@ -3,8 +3,8 @@ import { Toaster } from 'sonner';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { AppShell } from './components/layout/AppShell';
 import { NavigationProvider } from './contexts/NavigationContext';
-import { NavigationBar } from './components/navigation/NavigationBar';
-import { EnhancedAuthForm } from './components/auth/EnhancedAuthForm';
+import { LayoutWrapper } from './components/layout/LayoutWrapper';
+import { AuthPage } from './pages/AuthPage';
 import { HomePage } from './pages/HomePage';
 import ProtectedStorePage from './pages/ProtectedStorePage';
 import { CartPage } from './pages/CartPage';
@@ -32,30 +32,31 @@ function App() {
             <CartProvider>
               <NotificationProvider>
                 <div className="min-h-screen bg-gray-50">
-                  <NavigationBar />
-                  <AppShell>
-                    <Routes>
-                      {/* Public Routes - Landing as entry point */}
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/auth" element={<EnhancedAuthForm />} />
-                      <Route path="/store/:slug" element={<ProtectedStorePage />} />
-                      <Route path="/store/:slug/product/:productId" element={<SharedProductPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/checkout" element={<CheckoutPage />} />
-                      
-                      {/* Protected Routes */}
-                      <Route path="/products" element={<ProductsPage />} />
-                      <Route path="/orders" element={<OrdersPage />} />
-                      <Route path="/settings" element={<SettingsPage />} />
-                      <Route path="/onboarding" element={<OnboardingPage />} />
-                      <Route path="/test" element={<ComprehensiveTestSuite />} />
-                      
-                      {/* Legacy routes */}
-                      <Route path="/home" element={<Navigate to="/" replace />} />
-                      <Route path="/login" element={<Navigate to="/auth" replace />} />
-                      <Route path="/register" element={<Navigate to="/auth" replace />} />
-                    </Routes>
-                  </AppShell>
+                  <LayoutWrapper>
+                    <AppShell>
+                      <Routes>
+                        {/* Public Routes - Landing as entry point */}
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/auth" element={<AuthPage />} />
+                        <Route path="/store/:slug" element={<ProtectedStorePage />} />
+                        <Route path="/store/:slug/product/:productId" element={<SharedProductPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        
+                        {/* Protected Routes */}
+                        <Route path="/products" element={<ProductsPage />} />
+                        <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                        <Route path="/onboarding" element={<OnboardingPage />} />
+                        <Route path="/test" element={<ComprehensiveTestSuite />} />
+                        
+                        {/* Legacy routes */}
+                        <Route path="/home" element={<Navigate to="/" replace />} />
+                        <Route path="/login" element={<Navigate to="/auth" replace />} />
+                        <Route path="/register" element={<Navigate to="/auth" replace />} />
+                      </Routes>
+                    </AppShell>
+                  </LayoutWrapper>
                   <Toaster
                     position="top-right"
                     toastOptions={{
