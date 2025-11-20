@@ -83,7 +83,7 @@ export const AuthPage: React.FC = () => {
           transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
           className="text-center mt-8 text-sm text-gray-500"
         >
-          <p>© 2024 RIBA Marketplace. All rights reserved.</p>
+          <p>© 2025 RIBA Marketplace. All rights reserved.</p>
         </motion.div>
       </motion.div>
     </div>

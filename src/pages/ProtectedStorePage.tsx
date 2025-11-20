@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Star, MapPin, Phone, Mail, Shield, CheckCircle } from 'lucide-react';
-import { CustomerAccessFlow } from '@/components/access/CustomerAccessFlow';
+import { CustomerAccessFlow, useCustomerAccess } from '@/components/access/CustomerAccessFlow';
 import { ProductCard } from '@/components/store/ProductCard';
 import { ProductModal } from '@/components/store/ProductModal';
 import { useCart } from '@/contexts/CartContext';
@@ -93,18 +93,31 @@ export const ProtectedStorePage: React.FC = () => {
   const [showProductModal, setShowProductModal] = React.useState(false);
   const { addToCart } = useCart();
 
-  const handleAddToCart = (product: Product) => {
-    addToCart(product, 1);
-    toast.success(`${product.name} added to cart`);
-  };
+  const StoreContent: React.FC = () => {
+    const access = useCustomerAccess();
+    const accessType = access?.accessType;
+    const handleAddToCart = (product: Product) => {
+      if (accessType !== 'full') {
+        toast.error("You don’t have access to this store!", { duration: 1000 });
+        return;
+      }
+      addToCart(product, 1);
+      toast.success(`${product.name} added to cart`);
+    };
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
     setShowProductModal(true);
   };
 
-  return (
-    <CustomerAccessFlow businessSlug={slug || ''}>
+    const storeFromSlug = (s?: string): Store => ({
+    ...mockStore,
+    slug: s || mockStore.slug,
+    name: (s || mockStore.slug).replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    description: mockStore.description,
+    });
+
+    return (
       <div className="min-h-screen bg-gray-50">
         {/* Store Header */}
         <div className="relative bg-white shadow-sm">
@@ -112,7 +125,7 @@ export const ProtectedStorePage: React.FC = () => {
           <div className="relative h-64 bg-gradient-to-r from-emerald-500 to-emerald-600 overflow-hidden">
             <img 
               src={mockStore.banner} 
-              alt={`${mockStore.name} banner`}
+              alt={`${(storeFromSlug(slug)).name} banner`}
               className="w-full h-full object-cover opacity-30"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -127,7 +140,7 @@ export const ProtectedStorePage: React.FC = () => {
                   <div className="w-32 h-32 bg-white rounded-2xl shadow-xl border-4 border-white overflow-hidden">
                     <img 
                       src={mockStore.logo} 
-                      alt={`${mockStore.name} logo`}
+                      alt={`${(storeFromSlug(slug)).name} logo`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -141,7 +154,7 @@ export const ProtectedStorePage: React.FC = () => {
                 {/* Store Details */}
                 <div className="md:ml-6 flex-1">
                   <div className="flex items-center space-x-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">{mockStore.name}</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{storeFromSlug(slug).name}</h1>
                     {mockStore.verified && (
                       <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full flex items-center space-x-1">
                         <Shield className="w-3 h-3" />
@@ -150,7 +163,7 @@ export const ProtectedStorePage: React.FC = () => {
                     )}
                   </div>
                   
-                  <p className="text-gray-600 mb-4 max-w-2xl">{mockStore.description}</p>
+                  <p className="text-gray-600 mb-4 max-w-2xl">{storeFromSlug(slug).description}</p>
                   
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
@@ -245,6 +258,12 @@ export const ProtectedStorePage: React.FC = () => {
           />
         )}
       </div>
+    );
+  };
+
+  return (
+    <CustomerAccessFlow businessSlug={slug || ''}>
+      <StoreContent />
     </CustomerAccessFlow>
   );
 };

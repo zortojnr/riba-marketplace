@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Lock, ShoppingBag, AlertCircle } from 'lucide-react';
@@ -203,7 +203,9 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
         
         {/* Main content with restricted functionality */}
         <div className="relative z-30">
-          {children}
+          <AccessContext.Provider value={accessStatus}>
+            {children}
+          </AccessContext.Provider>
         </div>
 
         {/* Access restriction modal */}
@@ -288,7 +290,15 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
   }
 
   // Full access - render children normally
-  return <>{children}</>;
+  return (
+    <AccessContext.Provider value={accessStatus}>
+      {children}
+    </AccessContext.Provider>
+  );
 };
 
 export default CustomerAccessFlow;
+
+// Access context and hook to allow children to read access status
+const AccessContext = createContext<BusinessAccess | null>(null);
+export const useCustomerAccess = () => useContext(AccessContext);

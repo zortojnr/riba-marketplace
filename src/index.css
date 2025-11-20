@@ -1718,6 +1718,12 @@ body {
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
+.input--with-icon {
+  padding-left: 2.75rem; /* ensures room for a 20px icon with left spacing */
+}
+.input--with-icon:focus {
+  padding-left: 2.75rem; /* maintain padding on focus */
+}
 .input::placeholder {
   color: #9CA3AF;
 }

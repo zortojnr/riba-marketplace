@@ -175,11 +175,11 @@ export const OnboardingPage: React.FC = () => {
                 Business Name *
               </label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 <input
                   {...businessForm.register('businessName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
+                  className="input input--with-icon pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter your business name"
                 />
               </div>
@@ -270,11 +270,11 @@ export const OnboardingPage: React.FC = () => {
                   Phone Number *
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                   <input
                     {...contactForm.register('phone')}
                     type="tel"
-                    className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
+                    className="input input--with-icon pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter phone number"
                   />
                 </div>
@@ -290,11 +290,11 @@ export const OnboardingPage: React.FC = () => {
                   Website (Optional)
                 </label>
                 <div className="relative">
-                  <Globe className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                   <input
                     {...contactForm.register('website')}
                     type="url"
-                    className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
+                    className="input input--with-icon pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="https://yoursite.com"
                   />
                 </div>
@@ -375,11 +375,11 @@ export const OnboardingPage: React.FC = () => {
                 Store Name *
               </label>
               <div className="relative">
-                <StoreIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                <StoreIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                 <input
                   {...storeForm.register('storeName')}
                   type="text"
-                  className="input pl-10 pr-4 py-3 w-full placeholder-gray-500"
+                  className="input input--with-icon pr-4 py-3 w-full placeholder-gray-500"
                   placeholder="Enter your store name"
                 />
               </div>
