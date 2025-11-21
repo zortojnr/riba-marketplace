@@ -1863,3 +1863,39 @@ img {
     display: none !important;
   }
 }
+/* Landing page overflow and navbar transparency fixes */
+html, body {
+  width: 100%;
+  overflow-x: hidden !important;
+  background-color: #0b1016;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #0b1016 !important;
+  z-index: 10000;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+.navbar.scrolled {
+  background: #0b1016 !important;
+}
+
+/* Prevent accidental white lines */
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure internal nav elements stay within viewport */
+.navbar * {
+  max-width: 100%;
+  overflow: hidden;
+}

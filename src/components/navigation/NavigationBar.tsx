@@ -51,7 +51,7 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
   };
 
   return (
-    <nav className={`bg-white shadow-sm border-b border-gray-200 ${className}`} role="navigation" aria-label="Main navigation">
+    <nav className={`navbar ${className}`} role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left section - Logo and Back button */}
@@ -104,16 +104,19 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
           <div className="flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                <div className="hidden md:flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                {/* hide user name on store pages */}
+                {!location.pathname.startsWith('/store') && (
+                  <div className="hidden md:flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                    </div>
+                    <span className="text-sm text-gray-700">{user.name}</span>
                   </div>
-                  <span className="text-sm text-gray-700">{user.name}</span>
-                </div>
+                )}
                 
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors border border-red-500"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-none text-sm font-medium transition-colors border border-red-500"
                   aria-label="Sign out"
                 >
                   Logout
@@ -192,23 +195,25 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
             );
           })}
           
-          {user && (
-            <div className="border-t border-gray-200 pt-2">
-              <div className="flex items-center px-3 py-2">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
-                  <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+            {user && (
+              <div className="border-t border-gray-200 pt-2">
+                <div className="flex items-center px-3 py-2">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                    <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                  </div>
+                  {!location.pathname.startsWith('/store') && (
+                    <span className="text-sm text-gray-700">{user.name}</span>
+                  )}
                 </div>
-                <span className="text-sm text-gray-700">{user.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-none transition-colors border-t border-red-200 mt-2"
+                  role="menuitem"
+                >
+                  Logout
+                </button>
               </div>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors border-t border-red-200 mt-2"
-                role="menuitem"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </nav>

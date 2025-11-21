@@ -9,8 +9,11 @@ interface LayoutWrapperProps {
 export const LayoutWrapper: React.FC<LayoutWrapperProps> = ({ children }) => {
   const location = useLocation();
   
-  // Don't show navigation bar on auth pages and onboarding pages
-  const shouldShowNavBar = !location.pathname.startsWith('/auth') && !location.pathname.startsWith('/onboarding');
+  // Don't show navigation bar on auth pages, onboarding, or landing page
+  const shouldShowNavBar =
+    !location.pathname.startsWith('/auth') &&
+    !location.pathname.startsWith('/onboarding') &&
+    location.pathname !== '/';
   
   return (
     <>
