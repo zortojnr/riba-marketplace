@@ -32,6 +32,13 @@ export interface Store {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  businessName?: string;
+  businessType?: 'food' | 'products' | 'services';
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  website?: string;
 }
 
 // Cart Types

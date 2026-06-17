@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { OnboardingHeader } from '@/components/layout/OnboardingHeader';
+import { supabase } from '@/lib/supabase';
 
 // Validation schemas for each step
 const businessInfoSchema = z.object({
@@ -137,20 +138,68 @@ export const OnboardingPage: React.FC = () => {
   };
 
   const handleCompleteOnboarding = async () => {
+    if (!user) {
+      toast.error('You must be signed in to create a store.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Simulate API call to save onboarding data
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Get the store slug from the form data
-      const storeSlug = storeForm.getValues('slug');
-      
+      const business = businessForm.getValues();
+      const contact = contactForm.getValues();
+      const store = storeForm.getValues();
+
+      const { data: existing, error: lookupError } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('slug', store.slug)
+        .maybeSingle();
+
+      if (lookupError) throw lookupError;
+
+      if (existing) {
+        storeForm.setError('slug', {
+          type: 'manual',
+          message: 'That store URL is taken. Please choose another.',
+        });
+        setCurrentStep(STEPS.STORE);
+        return;
+      }
+
+      const { error: insertError } = await supabase.from('stores').insert({
+        owner_id: user.id,
+        name: store.storeName,
+        business_name: business.businessName,
+        business_type: business.businessType,
+        description: business.description,
+        phone: contact.phone,
+        address: contact.address,
+        city: contact.city,
+        state: contact.state,
+        website: contact.website || null,
+        slug: store.slug,
+        theme_color: store.themeColor,
+      });
+
+      if (insertError) {
+        if (insertError.code === '23505') {
+          storeForm.setError('slug', {
+            type: 'manual',
+            message: 'That store URL is taken. Please choose another.',
+          });
+          setCurrentStep(STEPS.STORE);
+          return;
+        }
+        throw insertError;
+      }
+
       toast.success('Store setup completed successfully!');
       setCurrentStep(STEPS.COMPLETE);
-      
-      // Redirect to the newly created store page after a short delay
+
+      // Redirect to the dashboard; there are no products yet, so the public
+      // storefront isn't a useful first stop.
       setTimeout(() => {
-        navigate(`/store/${storeSlug}`);
+        navigate('/dashboard');
       }, 2000);
     } catch (error) {
       toast.error('Failed to complete setup. Please try again.');
@@ -457,7 +506,7 @@ export const OnboardingPage: React.FC = () => {
                 Setup Complete!
               </h2>
               <p className="text-gray-600">
-                Your store is ready. Redirecting to your new store...
+                Your store is ready. Redirecting to your dashboard...
               </p>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
