@@ -126,8 +126,8 @@ body {
 .auth {
   --auth-bg-gradient: linear-gradient(135deg, #f0f9f4 0%, #fffbeb 100%);
   --auth-card-bg: #ffffff;
-  --auth-card-shadow: 0 8px 24px rgb(16 24 40 / 0.08);
-  --auth-card-border: 1px solid rgba(0, 0, 0, 0.06);
+  --auth-card-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 8px rgba(16, 24, 40, 0.04);
+  --auth-card-border: 1px solid #e5e7eb;
   --auth-border-radius: var(--radius-lg);
   --auth-max-width: 420px;
   --auth-padding-y: 32px;
@@ -180,9 +180,10 @@ body {
 }
 
 .auth__logo-image {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .auth__title {

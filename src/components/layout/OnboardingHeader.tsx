@@ -10,11 +10,13 @@ export const OnboardingHeader: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img 
-                src="/assets/images/logo.png" 
-                alt="RIBA Logo" 
-                className="h-8 w-auto"
-              />
+              <div className="h-8 w-8 rounded-full overflow-hidden">
+                <img
+                  src="/assets/images/logo.png"
+                  alt="RIBA Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </Link>
           </div>
           

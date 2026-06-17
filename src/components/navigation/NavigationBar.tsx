@@ -66,10 +66,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
             </button>
             
             <Link to="/" className="flex items-center" aria-label="RIBA Home">
-              <img 
-                src="/assets/images/logo.png" 
-                alt="RIBA" 
-                className="w-8 h-8 object-contain"
+              <img
+                src="/assets/images/logo.png"
+                alt="RIBA"
+                className="w-8 h-8 rounded-full object-cover"
               />
               <span className="ml-2 text-xl font-bold text-gray-900">RIBA</span>
             </Link>

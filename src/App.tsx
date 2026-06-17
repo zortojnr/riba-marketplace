@@ -18,6 +18,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ComprehensiveTestSuite } from './components/testing/ComprehensiveTestSuite';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { CartProvider } from './contexts/CartContext';
 import { StoreProvider } from './contexts/StoreContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -45,11 +46,11 @@ function App() {
                         <Route path="/checkout" element={<CheckoutPage />} />
                         
                         {/* Protected Routes */}
-                        <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/products" element={<ProductsPage />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/onboarding" element={<OnboardingPage />} />
+                        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                        <Route path="/products" element={<ProtectedRoute requireRole="owner"><ProductsPage /></ProtectedRoute>} />
+                        <Route path="/orders" element={<ProtectedRoute requireRole="owner"><OrdersPage /></ProtectedRoute>} />
+                        <Route path="/settings" element={<ProtectedRoute requireRole="owner"><SettingsPage /></ProtectedRoute>} />
+                        <Route path="/onboarding" element={<ProtectedRoute requireRole="owner"><OnboardingPage /></ProtectedRoute>} />
                         <Route path="/test" element={<ComprehensiveTestSuite />} />
                         
                         {/* Legacy routes */}

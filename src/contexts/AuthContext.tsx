@@ -17,13 +17,14 @@ type AuthAction =
   | { type: 'AUTH_START' }
   | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string } }
   | { type: 'AUTH_FAILURE'; payload: string }
+  | { type: 'AUTH_CHECK_COMPLETE' }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' };
 
 const initialState: AuthState = {
   user: null,
   token: null,
-  isLoading: false,
+  isLoading: true,
   error: null,
 };
 
@@ -47,8 +48,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         isLoading: false,
         error: action.payload,
       };
+    case 'AUTH_CHECK_COMPLETE':
+      return { ...state, isLoading: false };
     case 'LOGOUT':
-      return initialState;
+      return { ...initialState, isLoading: false };
     case 'CLEAR_ERROR':
       return { ...state, error: null };
     default:
@@ -78,7 +81,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         localStorage.removeItem('riba_token');
         localStorage.removeItem('riba_user');
+        dispatch({ type: 'AUTH_CHECK_COMPLETE' });
       }
+    } else {
+      dispatch({ type: 'AUTH_CHECK_COMPLETE' });
     }
   }, []);
 

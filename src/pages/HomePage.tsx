@@ -49,15 +49,15 @@ export const HomePage: React.FC = () => {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-4 group" aria-label="RIBA Marketplace - Home">
-              <motion.div 
-                className="relative w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-all duration-500"
+              <motion.div
+                className="relative w-14 h-14 flex items-center justify-center rounded-full overflow-hidden group-hover:scale-110 transition-all duration-500"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <img 
-                  src="/assets/images/logo.png" 
-                  alt="RIBA Marketplace Logo" 
-                  className="w-12 h-12 object-contain filter drop-shadow-lg contrast-125 brightness-110"
+                <img
+                  src="/assets/images/logo.png"
+                  alt="RIBA Marketplace Logo"
+                  className="w-full h-full object-cover filter drop-shadow-lg contrast-125 brightness-110"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                     (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
@@ -530,14 +530,14 @@ export const HomePage: React.FC = () => {
             {/* Mobile Divider - Hidden on desktop */}
             <div className="lg:hidden absolute left-8 right-8 top-1/2 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform -translate-y-1/2"></div>
 
-            <div className="grid lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
-              {/* Left Column - Setup & Launch */}
+            <div className="grid lg:grid-cols-2 gap-y-8 gap-x-16 lg:gap-y-16 max-w-6xl mx-auto">
+              {/* Step 1 - Setup Your Store */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 viewport={{ once: true }}
-                className="space-y-8"
+                className="lg:order-1"
               >
                 <div className="bg-gray-800/40 backdrop-blur-xl p-8 border border-gray-700/50 hover:border-emerald-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
                   <div className="flex items-start space-x-6">
@@ -550,32 +550,9 @@ export const HomePage: React.FC = () => {
                         Create your professional online store in minutes. Choose your store name, upload your branding, and configure payment methods.
                       </p>
                       <div className="relative h-48 rounded-lg overflow-hidden">
-                        <img 
-                          src="/assets/images/1.jpg" 
-                          alt="Store setup process" 
-                          className="w-full h-full object-cover filter brightness-90"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-800/40 backdrop-blur-xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
-                  <div className="flex items-start space-x-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-xl flex-shrink-0">
-                      <span className="text-2xl font-bold text-white">3</span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-white mb-4">Launch & Grow</h3>
-                      <p className="text-gray-300 leading-relaxed mb-6">
-                        Launch your store and start accepting orders. Track performance, manage inventory, and scale your business.
-                      </p>
-                      <div className="relative h-48 rounded-lg overflow-hidden">
-                        <img 
-                          src="/assets/images/3.jpg" 
-                          alt="Business growth" 
+                        <img
+                          src="/assets/images/1.jpg"
+                          alt="Store setup process"
                           className="w-full h-full object-cover filter brightness-90"
                           loading="lazy"
                         />
@@ -586,13 +563,13 @@ export const HomePage: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Right Column - Products & Manage */}
+              {/* Step 2 - Add Your Products */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
                 viewport={{ once: true }}
-                className="space-y-8 lg:mt-16"
+                className="lg:order-2 lg:mt-16"
               >
                 <div className="bg-gray-800/40 backdrop-blur-xl p-8 border border-gray-700/50 hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20">
                   <div className="flex items-start space-x-6">
@@ -605,9 +582,9 @@ export const HomePage: React.FC = () => {
                         Upload product photos, set prices, write descriptions, and organize your catalog. Our bulk upload saves time.
                       </p>
                       <div className="relative h-48 rounded-lg overflow-hidden">
-                        <img 
-                          src="/assets/images/2.jpg" 
-                          alt="Product management" 
+                        <img
+                          src="/assets/images/2.jpg"
+                          alt="Product management"
                           className="w-full h-full object-cover filter brightness-90"
                           loading="lazy"
                         />
@@ -616,16 +593,55 @@ export const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </motion.div>
 
-                <div className="text-center">
-                  <Link 
-                    to="/auth"
-                    className="inline-flex items-center space-x-3 bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-8 py-3 font-bold text-lg shadow-lg hover:shadow-emerald-500/40 transition-all duration-500 transform hover:scale-105"
-                  >
-                    <span>Start Your Journey</span>
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
+              {/* Step 3 - Launch & Grow */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="lg:order-3"
+              >
+                <div className="bg-gray-800/40 backdrop-blur-xl p-8 border border-gray-700/50 hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
+                  <div className="flex items-start space-x-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 flex items-center justify-center shadow-xl flex-shrink-0">
+                      <span className="text-2xl font-bold text-white">3</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-white mb-4">Launch & Grow</h3>
+                      <p className="text-gray-300 leading-relaxed mb-6">
+                        Launch your store and start accepting orders. Track performance, manage inventory, and scale your business.
+                      </p>
+                      <div className="relative h-48 rounded-lg overflow-hidden">
+                        <img
+                          src="/assets/images/3.jpg"
+                          alt="Business growth"
+                          className="w-full h-full object-cover filter brightness-90"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </motion.div>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="lg:order-4 text-center lg:mt-16 flex items-center justify-center"
+              >
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center space-x-3 bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700 text-white px-8 py-3 font-bold text-lg shadow-lg hover:shadow-emerald-500/40 transition-all duration-500 transform hover:scale-105"
+                >
+                  <span>Start Your Journey</span>
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
               </motion.div>
             </div>
           </div>
@@ -870,11 +886,11 @@ export const HomePage: React.FC = () => {
             {/* Company Info */}
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center space-x-3 mb-6 group">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/50 transition-all duration-300">
-                  <img 
-                    src="/assets/images/logo.png" 
-                    alt="RIBA Marketplace" 
-                    className="w-8 h-8 object-contain"
+                <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/50 transition-all duration-300">
+                  <img
+                    src="/assets/images/logo.png"
+                    alt="RIBA Marketplace"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                       (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');

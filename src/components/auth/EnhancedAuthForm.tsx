@@ -173,11 +173,11 @@ export const EnhancedAuthForm: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                <img 
-                  src="/assets/images/logo.png" 
-                  alt="RIBA" 
-                  className="w-10 h-10 object-contain"
+              <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center">
+                <img
+                  src="/assets/images/logo.png"
+                  alt="RIBA"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>

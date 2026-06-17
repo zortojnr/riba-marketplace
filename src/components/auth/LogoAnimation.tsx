@@ -88,11 +88,11 @@ export const LogoAnimation: React.FC<LogoAnimationProps> = ({
               />
               
               {/* Logo */}
-              <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative w-full h-full flex items-center justify-center rounded-full overflow-hidden">
                 <motion.img
                   src="/assets/images/logo.png"
                   alt="RIBA Logo"
-                  className="w-full h-full object-contain drop-shadow-lg"
+                  className="w-full h-full object-cover drop-shadow-lg"
                   onError={handleAnimationError}
                   initial={{ scale: 0.8 }}
                   animate={{ scale: 1 }}

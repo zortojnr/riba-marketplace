@@ -34,12 +34,12 @@ export const AuthPage: React.FC = () => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            className="inline-flex items-center justify-center w-24 h-24 bg-emerald-100 rounded-full mb-6 shadow-lg"
+            className="inline-flex items-center justify-center w-24 h-24 rounded-full overflow-hidden mb-6 shadow-lg"
           >
-            <img 
-              src="/assets/images/logo.png" 
-              alt="RIBA Marketplace" 
-              className="w-16 h-16 object-contain"
+            <img
+              src="/assets/images/logo.png"
+              alt="RIBA Marketplace"
+              className="w-full h-full object-cover"
             />
           </motion.div>
           <motion.h1
