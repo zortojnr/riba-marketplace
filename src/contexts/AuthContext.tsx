@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User, AuthState, LoginFormData, SignupFormData } from '@/types';
-import { apiClient } from '@/utils/api';
+import { supabase } from '@/lib/supabase';
+import { mapProfileToUser, type ProfileRow } from '@/lib/mappers';
 import { toast } from 'sonner';
 
 interface AuthContextType extends AuthState {
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignupFormData) => Promise<void>;
-  googleLogin: (token: string) => Promise<void>;
   loginDemo: () => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -15,7 +15,7 @@ interface AuthContextType extends AuthState {
 
 type AuthAction =
   | { type: 'AUTH_START' }
-  | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string } }
+  | { type: 'AUTH_SUCCESS'; payload: { user: User; token: string | null } }
   | { type: 'AUTH_FAILURE'; payload: string }
   | { type: 'AUTH_CHECK_COMPLETE' }
   | { type: 'LOGOUT' }
@@ -61,57 +61,68 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const fetchProfile = async (userId: string): Promise<User> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error) throw error;
+  return mapProfileToUser(data as ProfileRow);
+};
+
+const redirectForRole = (navigate: ReturnType<typeof useNavigate>, role: User['role']) => {
+  navigate(role === 'owner' ? '/onboarding' : '/dashboard');
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const navigate = useNavigate();
 
-  // Load auth data from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem('riba_token');
-    const user = localStorage.getItem('riba_user');
-    
-    if (token && user) {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        dispatch({ type: 'AUTH_CHECK_COMPLETE' });
+        return;
+      }
       try {
-        const parsedUser = JSON.parse(user);
-        apiClient.setToken(token);
-        dispatch({
-          type: 'AUTH_SUCCESS',
-          payload: { user: parsedUser, token },
-        });
-      } catch (error) {
-        localStorage.removeItem('riba_token');
-        localStorage.removeItem('riba_user');
+        const user = await fetchProfile(session.user.id);
+        dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: session.access_token } });
+      } catch {
         dispatch({ type: 'AUTH_CHECK_COMPLETE' });
       }
-    } else {
-      dispatch({ type: 'AUTH_CHECK_COMPLETE' });
-    }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) {
+        dispatch({ type: 'LOGOUT' });
+        return;
+      }
+      try {
+        const user = await fetchProfile(session.user.id);
+        dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: session.access_token } });
+      } catch {
+        dispatch({ type: 'AUTH_FAILURE', payload: 'Failed to load profile' });
+      }
+    });
+
+    return () => subscription.subscription.unsubscribe();
   }, []);
 
   const login = async (data: LoginFormData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const response = await apiClient.login(data.email, data.password);
-      const { user, token } = response.data as { user: User; token: string };
-      
-      localStorage.setItem('riba_token', token);
-      localStorage.setItem('riba_user', JSON.stringify(user));
-      apiClient.setToken(token);
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token },
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
       });
-      
+      if (error) throw error;
+
+      const user = await fetchProfile(signInData.user.id);
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signInData.session.access_token } });
       toast.success('Login successful!');
-      
-      // Redirect based on user role and store setup status
-      if (user.role === 'owner') {
-        navigate('/onboarding');
-      } else {
-        // Customers go to their dedicated dashboard
-        navigate('/dashboard');
-      }
+      redirectForRole(navigate, user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -122,56 +133,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (data: SignupFormData) => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const signupData = {
-        ...data,
-        role: data.role || 'customer'
-      };
-      const response = await apiClient.signup(signupData);
-      const { user, token } = response.data as { user: User; token: string };
-      
-      localStorage.setItem('riba_token', token);
-      localStorage.setItem('riba_user', JSON.stringify(user));
-      apiClient.setToken(token);
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token },
+      const role = data.role || 'customer';
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: { name: data.name, phone: data.phone, role },
+        },
       });
-      
-      toast.success('Account created successfully!');
-      
-      // Redirect based on user role
-      if (user.role === 'owner') {
-        navigate('/onboarding');
-      } else {
-        // Customers go to their dedicated dashboard
-        navigate('/dashboard');
+      if (error) throw error;
+
+      if (!signUpData.session || !signUpData.user) {
+        dispatch({ type: 'AUTH_CHECK_COMPLETE' });
+        toast.success('Account created! Check your email to confirm before signing in.');
+        navigate('/auth');
+        return;
       }
+
+      const user = await fetchProfile(signUpData.user.id);
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
+      toast.success('Account created successfully!');
+      redirectForRole(navigate, user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
-      dispatch({ type: 'AUTH_FAILURE', payload: message });
-      toast.error(message);
-    }
-  };
-
-  const googleLogin = async (token: string) => {
-    dispatch({ type: 'AUTH_START' });
-    try {
-      const response = await apiClient.googleLogin(token);
-      const { user, accessToken } = response.data as { user: User; accessToken: string };
-      
-      localStorage.setItem('riba_token', accessToken);
-      localStorage.setItem('riba_user', JSON.stringify(user));
-      apiClient.setToken(accessToken);
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token: accessToken },
-      });
-      
-      toast.success('Login successful!');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Google login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
       toast.error(message);
     }
@@ -180,37 +164,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginDemo = async () => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const demoUser: User = {
-        id: 'demo-user-001',
-        email: 'demo@riba.local',
-        phone: '+2348000000000',
-        name: 'Demo User',
-        avatar: undefined,
-        role: 'owner',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const email = `demo-${Date.now()}@riba.demo`;
+      const password = crypto.randomUUID();
 
-      const demoToken = 'demo-token';
-
-      localStorage.setItem('riba_token', demoToken);
-      localStorage.setItem('riba_user', JSON.stringify(demoUser));
-      apiClient.setToken(demoToken);
-
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user: demoUser, token: demoToken },
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name: 'Demo User', role: 'owner' },
+        },
       });
-
-      toast.success('Exploring demo mode');
-      
-      // Redirect based on user role - same as regular login
-      if (demoUser.role === 'owner') {
-        navigate('/onboarding');
-      } else {
-        // Customers go to their dedicated dashboard
-        navigate('/dashboard');
+      if (error) throw error;
+      if (!signUpData.session || !signUpData.user) {
+        throw new Error('Demo signup requires email confirmation to be disabled for this project.');
       }
+
+      const user = await fetchProfile(signUpData.user.id);
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
+      toast.success('Exploring demo mode');
+      redirectForRole(navigate, user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Demo login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -218,10 +190,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('riba_token');
-    localStorage.removeItem('riba_user');
-    apiClient.setToken(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
     navigate('/');
@@ -235,7 +205,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ...state,
     login,
     signup,
-    googleLogin,
     loginDemo,
     logout,
     clearError,
