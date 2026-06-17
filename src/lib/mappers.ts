@@ -1,4 +1,4 @@
-import type { User } from '@/types';
+import type { Product, User } from '@/types';
 
 export interface ProfileRow {
   id: string;
@@ -20,4 +20,33 @@ export const mapProfileToUser = (profile: ProfileRow): User => ({
   role: profile.role,
   createdAt: profile.created_at,
   updatedAt: profile.updated_at,
+});
+
+export interface ProductRow {
+  id: string;
+  store_id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: 'NGN' | 'USD';
+  images: string[];
+  category: string;
+  stock: number;
+  availability: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const mapProductRowToProduct = (row: ProductRow): Product => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  price: Number(row.price),
+  currency: row.currency,
+  images: row.images ?? [],
+  category: row.category,
+  stock: row.stock,
+  availability: row.availability,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
