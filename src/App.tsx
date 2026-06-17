@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { AppShell } from './components/layout/AppShell';
@@ -27,6 +28,7 @@ function App() {
   useServiceWorker(); // Initialize service worker for PWA functionality
   
   return (
+    <MotionConfig reducedMotion="user">
     <Router>
       <AuthProvider>
         <NavigationProvider>
@@ -79,6 +81,7 @@ function App() {
         </NavigationProvider>
       </AuthProvider>
     </Router>
+    </MotionConfig>
   );
 }
 

@@ -185,7 +185,7 @@ const ProductsPage: React.FC = () => {
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <label className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+          <label className="inline-flex items-center min-h-[44px] px-4 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
             <Upload className="w-4 h-4 mr-2" />
             Import
             <input

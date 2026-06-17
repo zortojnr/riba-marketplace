@@ -348,7 +348,7 @@ export const AuthForm: React.FC = () => {
                   <label className="auth__label">
                     I am signing up as *
                   </label>
-                  <div className="auth__radio-group" style={{ display: 'flex', gap: '24px', marginTop: '8px' }}>
+                  <div className="auth__radio-group" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 24px', marginTop: '8px' }}>
                     <label className="auth__radio-label" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                       <input
                         {...signupForm.register('role')}

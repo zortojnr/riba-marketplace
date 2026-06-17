@@ -73,62 +73,66 @@ export const CartPage: React.FC = () => {
                 <div className="divide-y divide-gray-200">
                   {items.map((item) => (
                     <div key={item.product.id} className="p-6">
-                      <div className="flex items-center space-x-4">
-                        {/* Product Image */}
-                        <div className="flex-shrink-0">
-                          {item.product.images && item.product.images.length > 0 ? (
-                            <img
-                              src={item.product.images[0]}
-                              alt={item.product.name}
-                              className="h-20 w-20 rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                              <span className="text-gray-400 text-2xl">📦</span>
-                            </div>
-                          )}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
+                          {/* Product Image */}
+                          <div className="flex-shrink-0">
+                            {item.product.images && item.product.images.length > 0 ? (
+                              <img
+                                src={item.product.images[0]}
+                                alt={item.product.name}
+                                className="h-20 w-20 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="h-20 w-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-400 text-2xl">📦</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Product Details */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {item.product.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {item.product.category}
+                            </p>
+                            <p className="text-lg font-semibold text-primary-600 mt-2">
+                              {formatCurrency(item.product.price, item.product.currency)}
+                            </p>
+                          </div>
                         </div>
 
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {item.product.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {item.product.category}
-                          </p>
-                          <p className="text-lg font-semibold text-primary-600 mt-2">
-                            {formatCurrency(item.product.price, item.product.currency)}
-                          </p>
-                        </div>
+                        <div className="flex items-center justify-between sm:justify-end gap-3 sm:ml-auto">
+                          {/* Quantity Controls */}
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                              className="min-w-[44px] min-h-[44px] flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              -
+                            </button>
+                            <span className="text-lg font-medium w-8 text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                              disabled={item.quantity >= item.product.stock}
+                              className="min-w-[44px] min-h-[44px] flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              +
+                            </button>
+                          </div>
 
-                        {/* Quantity Controls */}
-                        <div className="flex items-center space-x-3">
+                          {/* Remove Button */}
                           <button
-                            onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                            onClick={() => removeFromCart(item.product.id)}
+                            className="min-h-[44px] px-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           >
-                            -
-                          </button>
-                          <span className="text-lg font-medium w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                            disabled={item.quantity >= item.product.stock}
-                            className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            +
+                            Remove
                           </button>
                         </div>
-
-                        {/* Remove Button */}
-                        <button
-                          onClick={() => removeFromCart(item.product.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          Remove
-                        </button>
                       </div>
                     </div>
                   ))}

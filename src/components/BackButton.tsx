@@ -40,7 +40,7 @@ const BackButton: React.FC<BackButtonProps> = ({
   return (
     <motion.button
       onClick={handleClick}
-      className={`inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-200 border ${getVariantStyles()} ${className}`}
+      className={`inline-flex items-center min-h-[44px] px-4 rounded-lg font-medium transition-all duration-200 border ${getVariantStyles()} ${className}`}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       initial={{ opacity: 0, x: -20 }}

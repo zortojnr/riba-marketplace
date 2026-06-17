@@ -195,11 +195,11 @@ export const ProtectedStorePage: React.FC = () => {
 
                 {/* Contact Actions */}
                 <div className="mt-6 md:mt-0 md:ml-6 flex space-x-3">
-                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                  <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 min-h-[44px] rounded-lg font-medium transition-colors flex items-center space-x-2">
                     <Phone className="w-4 h-4" />
                     <span>Call</span>
                   </button>
-                  <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                  <button className="border border-gray-300 hover:border-gray-400 text-gray-700 px-4 min-h-[44px] rounded-lg font-medium transition-colors flex items-center space-x-2">
                     <Mail className="w-4 h-4" />
                     <span>Message</span>
                   </button>

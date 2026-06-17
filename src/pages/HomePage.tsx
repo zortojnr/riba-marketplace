@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +20,11 @@ import {
 export const HomePage: React.FC = () => { 
   const { user, loginDemo, isLoading } = useAuth();
   const [demoLoading, setDemoLoading] = useState<'owner' | 'customer' | null>(null);
+
+  useEffect(() => {
+    document.body.classList.add('home-bg');
+    return () => document.body.classList.remove('home-bg');
+  }, []);
 
   const handleDemoLogin = async (type: 'owner' | 'customer') => {
     setDemoLoading(type);
@@ -98,15 +103,15 @@ export const HomePage: React.FC = () => {
 
             {/* Mobile Auth Buttons */}
             <div className="lg:hidden flex items-center space-x-2">
-              <Link 
-                to="/auth" 
-                className="px-3 py-1.5 text-gray-100 hover:text-white transition-all duration-300 font-medium text-xs border border-gray-600 hover:border-emerald-500"
+              <Link
+                to="/auth"
+                className="min-h-[44px] inline-flex items-center px-3 text-gray-100 hover:text-white transition-all duration-300 font-medium text-sm border border-gray-600 hover:border-emerald-500"
               >
                 Sign In
               </Link>
-              <Link 
-                to="/auth" 
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-1.5 font-semibold text-xs"
+              <Link
+                to="/auth"
+                className="min-h-[44px] inline-flex items-center bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 font-semibold text-sm"
               >
                 Sign Up
               </Link>
@@ -737,7 +742,7 @@ export const HomePage: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               viewport={{ once: true }}
-              className="relative group scale-105 z-10"
+              className="relative group md:scale-105 z-10"
             >
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-6 py-2 text-sm font-semibold shadow-xl z-20">
                 Most Popular

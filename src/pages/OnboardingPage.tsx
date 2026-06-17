@@ -545,20 +545,20 @@ export const OnboardingPage: React.FC = () => {
               const isCompleted = steps.findIndex(s => s.key === currentStep) > index;
               
               return (
-                <div key={step.key} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                <div key={step.key} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all ${
                       isActive ? 'bg-primary-600 text-white shadow-lg' :
                       isCompleted ? 'bg-green-600 text-white' :
                       'bg-gray-200 text-gray-600'
                     }`}>
                       {isCompleted ? (
-                        <CheckCircle className="h-6 w-6" />
+                        <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6" />
                       ) : (
-                        <Icon className="h-6 w-6" />
+                        <Icon className="h-4 w-4 sm:h-6 sm:w-6" />
                       )}
                     </div>
-                    <span className={`mt-2 text-sm font-medium ${
+                    <span className={`hidden sm:block mt-2 text-sm font-medium text-center ${
                       isActive ? 'text-primary-600' :
                       isCompleted ? 'text-green-600' :
                       'text-gray-500'
@@ -567,7 +567,7 @@ export const OnboardingPage: React.FC = () => {
                     </span>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`w-24 h-1 mx-4 mt-6 transition-all ${
+                    <div className={`flex-1 sm:w-24 sm:flex-none h-1 mx-2 sm:mx-4 sm:mt-6 transition-all ${
                       isCompleted ? 'bg-green-600' :
                       step.key === currentStep ? 'bg-primary-300' :
                       'bg-gray-200'
@@ -581,7 +581,7 @@ export const OnboardingPage: React.FC = () => {
 
         {/* Form Content */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             <div className="mb-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Set Up Your Business
@@ -600,20 +600,20 @@ export const OnboardingPage: React.FC = () => {
 
           {/* Navigation Buttons */}
           {(currentStep as OnboardingStep) !== STEPS.COMPLETE && (
-            <div className="px-8 py-6 bg-gray-50 rounded-b-2xl flex justify-between">
+            <div className="px-4 sm:px-8 py-4 sm:py-6 bg-gray-50 rounded-b-2xl flex justify-between">
               <button
                 onClick={handlePreviousStep}
                 disabled={currentStep === STEPS.BUSINESS}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 min-h-[44px] px-4 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Previous
               </button>
-              
+
               <button
                 onClick={handleNextStep}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 min-h-[44px] px-6 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? (
                   <>

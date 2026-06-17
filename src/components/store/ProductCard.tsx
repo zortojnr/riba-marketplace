@@ -43,15 +43,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
         
-        {/* Overlay buttons */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+        {/* Overlay buttons - pinned bottom-right and always visible on touch devices, centered hover-reveal on desktop */}
+        <div className="absolute inset-0 md:bg-black md:bg-opacity-0 md:group-hover:bg-opacity-20 transition-all duration-200 flex items-end md:items-center justify-end md:justify-center p-2 md:p-0 md:opacity-0 md:group-hover:opacity-100">
           <div className="flex space-x-2">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClick();
               }}
-              className="bg-white text-gray-900 p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="bg-white text-gray-900 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+              aria-label={`View ${product.name}`}
             >
               <Eye className="h-4 w-4" />
             </button>
@@ -60,8 +61,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 e.stopPropagation();
                 onAddToCart();
               }}
-              className="bg-primary-500 text-white p-2 rounded-full hover:bg-primary-600 transition-colors"
+              className="bg-primary-500 text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-primary-600 transition-colors disabled:opacity-50 shadow-sm"
               disabled={!product.availability || product.stock === 0}
+              aria-label={`Add ${product.name} to cart`}
             >
               <Plus className="h-4 w-4" />
             </button>

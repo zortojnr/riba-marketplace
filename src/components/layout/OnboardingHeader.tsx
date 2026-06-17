@@ -21,9 +21,9 @@ export const OnboardingHeader: React.FC = () => {
           </div>
           
           {/* Back Button */}
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          <Link
+            to="/"
+            className="flex items-center gap-2 min-h-[44px] px-3 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Home</span>

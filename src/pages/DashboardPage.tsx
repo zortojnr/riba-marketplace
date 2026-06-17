@@ -326,7 +326,7 @@ const BusinessOwnerDashboard = () => {
             <p className="text-gray-600">
               Here's what's happening with your store today.
             </p>
-            {user?.email === 'demo@riba.local' && (
+            {user?.email?.endsWith('@riba.demo') && (
               <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-700">
                 <span>Demo Mode</span>
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500" />

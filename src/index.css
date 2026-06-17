@@ -214,6 +214,28 @@ body {
   margin-bottom: 0;
 }
 
+.auth__field {
+  margin-bottom: var(--spacing-2);
+  position: relative;
+}
+
+.auth__form-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-2);
+}
+
+@media (min-width: 480px) {
+  .auth__form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auth__form-row .auth__form-group {
+  margin-bottom: 0;
+}
+
 .auth__label {
   display: block;
   font-size: var(--font-size-sm);
@@ -310,9 +332,13 @@ body {
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  padding: 4px;
   cursor: pointer;
   color: #9ca3af;
   transition: color var(--transition-fast);
@@ -333,7 +359,7 @@ body {
 
 .auth__validation-icon {
   position: absolute;
-  right: 48px;
+  right: 72px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
@@ -751,6 +777,7 @@ body {
 .auth__radio-label {
   display: flex;
   align-items: center;
+  min-height: 44px;
   cursor: pointer;
   font-size: var(--font-size-sm);
   color: #374151;
@@ -1334,6 +1361,7 @@ body {
 @media (max-width: 768px) {
   .customer-dashboard {
     padding: var(--spacing-2);
+    padding-bottom: 88px;
   }
   
   .customer-dashboard__title {
@@ -1620,6 +1648,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
   padding: 8px 16px;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -1684,6 +1713,48 @@ body {
   box-shadow: 0 0 0 2px rgba(75, 85, 99, 0.2);
 }
 
+/* Breadcrumb navigation */
+.breadcrumb__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb__separator {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.breadcrumb__link {
+  font-size: var(--font-size-sm);
+  color: #6b7280;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.breadcrumb__link:hover {
+  color: #0B6E4F;
+  text-decoration: underline;
+}
+
+.breadcrumb__current {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: #111827;
+}
+
 /* Card styles */
 .card {
   background: #ffffff;
@@ -1710,6 +1781,7 @@ body {
 .input {
   display: block;
   width: 100%;
+  min-height: 44px;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: var(--radius-lg);
@@ -1868,35 +1940,17 @@ img {
 html, body {
   width: 100%;
   overflow-x: hidden !important;
-  background-color: #0b1016;
   margin: 0;
   padding: 0;
 }
 
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #0b1016 !important;
-  z-index: 10000;
-  margin: 0 !important;
-  padding: 0 !important;
-  border-bottom: none !important;
-  box-shadow: none !important;
-}
-
-.navbar.scrolled {
-  background: #0b1016 !important;
+/* Dark background is scoped to the landing page only (toggled via HomePage),
+   so other pages keep the default white body background set above. */
+body.home-bg {
+  background-color: #0b1016;
 }
 
 /* Prevent accidental white lines */
 * {
   box-sizing: border-box;
-}
-
-/* Ensure internal nav elements stay within viewport */
-.navbar * {
-  max-width: 100%;
-  overflow: hidden;
 }
