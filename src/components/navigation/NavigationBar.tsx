@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users, Shield } from 'lucide-react';
+import { User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigationContext } from '@/contexts/NavigationContext';
+import { useCart } from '@/contexts/CartContext';
 import { Breadcrumb } from './Breadcrumb';
 
 interface NavigationBarProps {
@@ -12,8 +13,22 @@ interface NavigationBarProps {
 export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) => {
   const { user, logout } = useAuth();
   const { goBack } = useNavigationContext();
+  const { getItemCount } = useCart();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
+  const profileMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!isProfileMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileMenuOpen]);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -50,7 +65,10 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
   const handleLogout = async () => {
     await logout();
     setIsMenuOpen(false);
+    setIsProfileMenuOpen(false);
   };
+
+  const cartItemCount = getItemCount();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -109,24 +127,70 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
           {/* Right section - User Menu */}
           <div className="flex items-center space-x-4">
             {user ? (
-              <div className="flex items-center space-x-4">
-                {/* hide user name on store pages */}
-                {!location.pathname.startsWith('/store') && (
-                  <div className="hidden md:flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
+                {user.role !== 'owner' && (
+                  <Link
+                    to="/cart"
+                    className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                    aria-label="View cart"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItemCount > 99 ? '99+' : cartItemCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
+
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    onClick={() => setIsProfileMenuOpen((open) => !open)}
+                    className="hidden md:flex items-center space-x-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileMenuOpen}
+                    aria-label="Open profile menu"
+                  >
                     <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
                     </div>
-                    <span className="text-sm text-gray-700">{user.name}</span>
-                  </div>
-                )}
-                
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-none text-sm font-medium transition-colors border border-red-500"
-                  aria-label="Sign out"
-                >
-                  Logout
-                </button>
+                    {!location.pathname.startsWith('/store') && (
+                      <span className="text-sm text-gray-700">{user.name}</span>
+                    )}
+                    <ChevronDown className="w-4 h-4 text-gray-400" aria-hidden="true" />
+                  </button>
+
+                  {/* Mobile: tapping the avatar opens the menu too */}
+                  <button
+                    onClick={() => setIsProfileMenuOpen((open) => !open)}
+                    className="md:hidden flex items-center justify-center w-9 h-9 bg-emerald-100 rounded-full"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileMenuOpen}
+                    aria-label="Open profile menu"
+                  >
+                    <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+                  </button>
+
+                  {isProfileMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
+                    >
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        role="menuitem"
+                        className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" aria-hidden="true" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center space-x-4">
@@ -200,26 +264,6 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
               </Link>
             );
           })}
-          
-            {user && (
-              <div className="border-t border-gray-200 pt-2">
-                <div className="flex items-center px-3 py-2">
-                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
-                    <User className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-                  </div>
-                  {!location.pathname.startsWith('/store') && (
-                    <span className="text-sm text-gray-700">{user.name}</span>
-                  )}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-none transition-colors border-t border-red-200 mt-2"
-                  role="menuitem"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
         </div>
       </div>
     </nav>
