@@ -165,10 +165,10 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
   // No access - show restricted message
   if (accessStatus?.accessType === 'none') {
     const isSharedLink = productId && sharedLinkToken;
-    const errorTitle = isSharedLink ? 'Invalid Shared Link' : 'Access Denied';
-    const errorMessage = isSharedLink 
+    const errorTitle = isSharedLink ? 'Invalid Shared Link' : 'Store Not Found';
+    const errorMessage = isSharedLink
       ? 'This shared product link is invalid, expired, or you don\'t have permission to access this product.'
-      : 'The business you\'re trying to access doesn\'t exist or you don\'t have permission to view it.';
+      : 'This store doesn\'t exist or is no longer active.';
     
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">

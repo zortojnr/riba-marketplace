@@ -37,6 +37,7 @@ export const ProtectedStorePage: React.FC = () => {
           .from('products')
           .select('*')
           .eq('store_id', store.id)
+          .eq('availability', true)
           .order('created_at', { ascending: false });
         if (cancelled) return;
         if (error) {
