@@ -6,7 +6,7 @@ export interface ProfileRow {
   phone: string | null;
   name: string;
   avatar: string | null;
-  role: 'customer' | 'owner';
+  role: 'customer' | 'owner' | 'admin';
   created_at: string;
   updated_at: string;
 }

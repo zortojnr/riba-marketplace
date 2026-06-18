@@ -5,7 +5,7 @@ import { Search, Filter, Package } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { mapOrderRowToOrder, type OrderRow } from '@/lib/mappers';
-import type { Order } from '@/types';
+import type { Order, User } from '@/types';
 import { formatCurrency } from '@/utils';
 import { toast } from 'sonner';
 
@@ -30,7 +30,7 @@ export const OrdersPage: React.FC = () => {
     }
   }, [user?.id, user?.role]);
 
-  const fetchOrders = async (userId: string, role: 'owner' | 'customer') => {
+  const fetchOrders = async (userId: string, role: User['role']) => {
     try {
       setLoading(true);
 

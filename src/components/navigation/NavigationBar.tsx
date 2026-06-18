@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users } from 'lucide-react';
+import { User, Settings, Package, ShoppingCart, Menu, X, ArrowLeft, TrendingUp, Users, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigationContext } from '@/contexts/NavigationContext';
 import { Breadcrumb } from './Breadcrumb';
@@ -34,8 +34,14 @@ export const NavigationBar: React.FC<NavigationBarProps> = ({ className = '' }) 
     { path: '/settings', label: 'Settings', icon: Settings, requiresAuth: true },
   ];
 
-  // Use business owner specific navigation if user is a business owner
-  const activeNavItems = user?.role === 'owner' ? businessOwnerItems : navigationItems;
+  // Admin-only navigation
+  const adminItems = [
+    { path: '/admin', label: 'Admin', icon: Shield, requiresAuth: true },
+  ];
+
+  // Use role-specific navigation
+  const activeNavItems =
+    user?.role === 'owner' ? businessOwnerItems : user?.role === 'admin' ? adminItems : navigationItems;
   const filteredNavItems = activeNavItems.filter(item => {
     if (item.requiresAuth && !user) return false;
     return true;

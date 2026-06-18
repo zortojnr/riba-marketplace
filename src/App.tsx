@@ -18,6 +18,7 @@ import { OrdersPage } from './pages/OrdersPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { AdminPage } from './pages/AdminPage';
 import { ComprehensiveTestSuite } from './components/testing/ComprehensiveTestSuite';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -53,6 +54,7 @@ function App() {
                         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
                         <Route path="/settings" element={<ProtectedRoute requireRole="owner"><SettingsPage /></ProtectedRoute>} />
                         <Route path="/onboarding" element={<ProtectedRoute requireRole="owner"><OnboardingPage /></ProtectedRoute>} />
+                        <Route path="/admin" element={<ProtectedRoute requireRole="admin"><AdminPage /></ProtectedRoute>} />
                         {/* Dev-only: never registered in a production build */}
                         {import.meta.env.DEV && (
                           <Route path="/test" element={<ComprehensiveTestSuite />} />

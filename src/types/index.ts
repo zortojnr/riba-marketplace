@@ -92,7 +92,7 @@ export interface User {
   phone?: string;
   name: string;
   avatar?: string;
-  role: 'customer' | 'owner';
+  role: 'customer' | 'owner' | 'admin';
   createdAt: string;
   updatedAt: string;
 }

@@ -11,6 +11,14 @@ import type { Store, Order } from '@/types';
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
 
+  // Admins have their own dashboard; sending them through the owner/customer
+  // branches below would either show them someone else's shape of page or,
+  // for an admin with no store, bounce them into an owner-only onboarding
+  // flow they can't pass (loop back to /dashboard -> /onboarding -> ...).
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
   // Redirect customers to customer dashboard
   if (user?.role === 'customer') {
     return <CustomerDashboardContent />;

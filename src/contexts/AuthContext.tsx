@@ -153,7 +153,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate(`${from.pathname}${from.search || ''}`, { replace: true });
       return;
     }
-    navigate(role === 'owner' ? '/onboarding' : '/dashboard');
+    if (role === 'owner') {
+      navigate('/onboarding');
+    } else if (role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   useEffect(() => {
