@@ -72,24 +72,30 @@ The one real server-side surface is `api/payments/paystack/` (Vercel serverless 
 
 ## PHASE 4 — FRONTEND DESIGN
 
-### 4.1 Screen Map — `DONE` (routes exist; one page still genuinely unbuilt, see SettingsPage and SharedProductPage below)
+### 4.1 Screen Map — `DONE`
 
 | Route | Page | Status |
 | :---- | :---- | :---- |
 | `/` | HomePage | DONE (static landing, plus working "Demo Store Owner" / "Demo Customer" buttons — see Phase 5.1) |
 | `/auth` | AuthPage | DONE (real signup/login) |
 | `/onboarding` | OnboardingPage | DONE — inserts a real row into `stores`, validates the slug isn't taken |
+| `/stores` | StoresPage | DONE (new) — public listing of active stores, filterable by `business_type` via `?type=` |
 | `/store/:slug` | ProtectedStorePage | DONE — fetches the real store by slug and its real, available products via `CustomerAccessFlow`. Shows a real "Store Not Found" state for missing/inactive stores, no mock fallback |
-| `/store/:slug/product/:productId` | SharedProductPage | **STALE** — still 100% mock data (`loadProduct` fakes a delay and returns a hardcoded "Premium Organic Coffee Beans" product regardless of the URL). Not touched yet; next thing to wire if shared product links matter |
+| `/store/:slug/product/:productId` | SharedProductPage | DONE — fetches the real store and the real, available product scoped to that store. The share-link "token" concept it used to gate on never had a real backing (see below) and has been removed |
 | `/cart` | CartPage | DONE (client-side cart logic, no backend dependency) |
 | `/checkout` | CheckoutPage | DONE for pay-on-pickup — inserts a real `orders` row \+ `order_items`, `customer_id` from the session, redirects unauthenticated visitors to `/auth` with a return path. Paystack/Flutterwave radio options exist in the form but aren't wired to a real charge yet, see Phase 6 |
-| `/dashboard` | DashboardPage | Owner view: DONE — real store, real product/order counts, redirects to `/onboarding` if no store exists yet. Customer view: **STALE** — still renders hardcoded "featured stores" and "recent orders" arrays, not wired to real data |
+| `/dashboard` | DashboardPage | DONE for both views. Owner: real store, real product/order counts, redirects to `/onboarding` if no store exists yet. Customer: real active stores (linking to `/stores`/`/store/:slug`) and the customer's real order history, replacing the previous hardcoded arrays |
 | `/products` | ProductsPage | DONE — real CRUD against `products`, scoped to the owner's store |
 | `/orders` | OrdersPage | DONE — owners see orders against their store, customers see their own order history, both scoped via RLS rather than a frontend permission check |
-| `/settings` | SettingsPage | **BROKEN** — purely static form markup. Inputs aren't wired to any state, "Save Changes" has no handler. Nothing here persists anywhere |
+| `/settings` | SettingsPage | DONE — loads and updates the owner's real `stores` row (name, business name, description, contact info, theme color). Currency/delivery-fee fields were dropped rather than faked, since those columns don't exist on `stores` |
 | `/test` | ComprehensiveTestSuite | Fixed — only registered as a route when `import.meta.env.DEV` is true, so it no longer ships in production builds |
 
-`src/pages/StorePage.tsx` (the old dead duplicate of `ProtectedStorePage`) has been deleted. `src/components/auth/EnhancedAuthForm.tsx` was also found to be dead (zero imports anywhere) and deleted.
+`src/pages/StorePage.tsx` (old dead duplicate of `ProtectedStorePage`) and `src/components/auth/EnhancedAuthForm.tsx` (zero imports anywhere) were both dead code, both deleted.
+
+**Two related bugs found and fixed while wiring `SharedProductPage`:**
+- `ShareProductLink` generated a share URL with a fake `?token=...` that `CustomerAccessFlow`'s old shared-link validator only ever accepted three hardcoded test strings for — every real generated link would have failed for anyone who opened it. There's no `shared_links` table or any other backing for a token concept, so it's been removed entirely; the share URL is now just the plain product URL (already publicly viewable via RLS, same as the storefront).
+- `ProductDetailModal`'s share button hardcoded `businessSlug="demo-store"` / `businessName="Demo Fashion Hub"` regardless of which real store's product was open, so every "share this product" link pointed at the wrong store. `ProtectedStorePage` now passes the real store's slug/name through.
+- Drive-by fix in the same code path: `ProtectedStorePage`'s `handleAddToCart` ignored the quantity selected in the product modal and always added 1 to the cart.
 
 ### 4.2 Known UI/Styling Inconsistencies — `DONE`
 
@@ -98,9 +104,9 @@ The one real server-side surface is `api/payments/paystack/` (Vercel serverless 
 3. **`src/index.css` is 1,956 lines.** Still true, still not audited line-by-line for dead/conflicting rules. Lower priority than the items above since it isn't actively causing a bug right now — flagged here so it doesn't get forgotten, not treated as blocking.
 4. ~~Two components both named `ProductModal`~~ — **Fixed.** `src/components/store/ProductModal.tsx` → `ProductDetailModal.tsx` (customer-facing product view), `src/components/products/ProductModal.tsx` → `ProductFormModal.tsx` (owner's create/edit form). All imports updated.
 
-### 4.3 UI States — `IN PROGRESS`
+### 4.3 UI States — `DONE`
 
-Every screen should handle: loading, empty, error, and populated states. `ProtectedStorePage`, `ProductsPage`, `OrdersPage`, and `DashboardPage` now all have real loading spinners and real empty states (e.g. "No products available", "No orders yet", "No store yet") instead of only ever rendering mock data. `SharedProductPage` and `SettingsPage` still don't, since they're not wired to real data at all yet (see 4.1).
+Every screen should handle: loading, empty, error, and populated states. `ProtectedStorePage`, `ProductsPage`, `OrdersPage`, `DashboardPage` (both views), `SettingsPage`, `StoresPage`, and `SharedProductPage` now all have real loading spinners and real empty/not-found states instead of only ever rendering mock data.
 
 ---
 
@@ -140,7 +146,7 @@ redirects to wherever the user was headed (e.g. checkout), or role \= owner → 
 
 Login (`signInWithPassword`) and logout (`signOut`) follow the same pattern. Session restoration on page load and cross-tab sync both go through `supabase.auth.onAuthStateChange`, implemented in `AuthContext.tsx`. `ProtectedRoute` and `CheckoutPage` both redirect to `/auth` with `state: { from: location }` when a session is required; `AuthContext` honors that return path after a successful login/signup instead of always landing on the role-based default page.
 
-**Demo accounts** (`HomePage`'s "Demo Store Owner" / "Demo Customer" buttons, and `AuthForm`'s "Try Demo (Amina Bello)" button): `loginDemo(role)` creates a real, throwaway Supabase account for the requested role — previously both HomePage buttons silently created an **owner** account regardless of which one was clicked, this is fixed. A demo **owner** account is also auto-seeded with one store ("Amina's Fashion Hub") and three products so it lands on a populated, working dashboard immediately instead of bouncing through the onboarding form. A demo **customer** account lands on `/dashboard`'s customer view, which still shows static placeholder "featured stores"/"recent orders" content (see 4.1) rather than real ones.
+**Demo accounts** (`HomePage`'s "Demo Store Owner" / "Demo Customer" buttons, and `AuthForm`'s "Try Demo (Amina Bello)" button): `loginDemo(role)` creates a real, throwaway Supabase account for the requested role — previously both HomePage buttons silently created an **owner** account regardless of which one was clicked, this is fixed. A demo **owner** account is also auto-seeded with one store ("Amina's Fashion Hub") and three products so it lands on a populated, working dashboard immediately instead of bouncing through the onboarding form. A demo **customer** account lands on `/dashboard`'s customer view, which now shows real active stores and the customer's real (empty, until they order something) order history.
 
 **Token strategy:**
 
@@ -208,10 +214,7 @@ In priority order, as agreed:
 3. **Customer browsing \+ cart \+ checkout** — `DONE` for the non-payment path. `ProtectedStorePage` fetches the real store and products by slug. `CheckoutPage` inserts real `orders` \+ `order_items` rows for pay-on-pickup orders. `CartPage`'s client-side logic is unchanged.
 4. **Payments (Paystack)** — `IN PROGRESS`. Serverless `initialize`/`webhook` functions are built (Phase 6.1) but not yet wired into `CheckoutPage.tsx`'s UI — that's the next concrete step, gated on a confirmed test transaction.
 
-Not yet started, not in this roadmap's original four items but discovered along the way:
-- `SharedProductPage` is still fully mock (Phase 4.1).
-- `DashboardPage`'s customer view is still fully mock (Phase 4.1).
-- `SettingsPage` is non-functional static markup (Phase 4.1).
+Discovered along the way and now also done: `SharedProductPage`, `DashboardPage`'s customer view, and `SettingsPage` were all genuinely unbuilt (fully mock or non-functional) despite not being in the original four roadmap items — all three are now wired to real Supabase data (Phase 4.1). A new `/stores` page was added to support real "browse stores" links that previously pointed nowhere.
 
 ---
 
