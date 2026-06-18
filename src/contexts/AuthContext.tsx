@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 interface AuthContextType extends AuthState {
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignupFormData) => Promise<void>;
-  loginDemo: () => Promise<void>;
+  loginDemo: (role?: User['role']) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -70,6 +70,73 @@ const fetchProfile = async (userId: string): Promise<User> => {
 
   if (error) throw error;
   return mapProfileToUser(data as ProfileRow);
+};
+
+// Seeds a demo owner with one store and a few products so "Demo Store
+// Owner" lands on a populated, working dashboard instead of an empty
+// onboarding form. Best-effort: if it fails, the demo account still works,
+// it just lands on /onboarding like any other new owner.
+const provisionDemoStore = async (ownerId: string) => {
+  try {
+    const slug = `demo-store-${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
+
+    const { data: store, error: storeError } = await supabase
+      .from('stores')
+      .insert({
+        owner_id: ownerId,
+        name: "Amina's Fashion Hub",
+        business_name: "Amina's Fashion Hub",
+        business_type: 'products',
+        description: 'A demo storefront seeded automatically so you can explore the owner dashboard right away.',
+        phone: '+234 800 000 0000',
+        address: '12 Allen Avenue',
+        city: 'Lagos',
+        state: 'Lagos',
+        slug,
+        theme_color: '#0B6E4F',
+      })
+      .select('id')
+      .single();
+    if (storeError || !store) return;
+
+    await supabase.from('products').insert([
+      {
+        store_id: store.id,
+        name: 'Ankara Print Dress',
+        description: 'Vibrant Ankara print dress with a tailored fit.',
+        price: 12000,
+        currency: 'NGN',
+        images: [],
+        category: 'Fashion',
+        stock: 10,
+        availability: true,
+      },
+      {
+        store_id: store.id,
+        name: 'Beaded Necklace Set',
+        description: 'Handmade beaded necklace and earring set.',
+        price: 4500,
+        currency: 'NGN',
+        images: [],
+        category: 'Accessories',
+        stock: 20,
+        availability: true,
+      },
+      {
+        store_id: store.id,
+        name: 'Woven Tote Bag',
+        description: 'Durable woven tote bag, perfect for everyday use.',
+        price: 8000,
+        currency: 'NGN',
+        images: [],
+        category: 'Accessories',
+        stock: 15,
+        availability: true,
+      },
+    ]);
+  } catch {
+    // Demo account still logs in fine without a seeded store.
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -170,17 +237,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const loginDemo = async () => {
+  const loginDemo = async (role: User['role'] = 'owner') => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const email = `demo-${Date.now()}@riba.demo`;
+      const email = `demo-${role}-${Date.now()}@riba.demo`;
       const password = crypto.randomUUID();
+      const name = role === 'owner' ? 'Amina Bello' : 'Demo Customer';
 
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { name: 'Demo User', role: 'owner' },
+          data: { name, role },
         },
       });
       if (error) throw error;
@@ -189,9 +257,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const user = await fetchProfile(signUpData.user.id);
+
+      // A demo owner with no store would just land on the onboarding form,
+      // which defeats the point of a one-click demo - seed a store and a
+      // few products so they land straight on a populated dashboard.
+      if (role === 'owner') {
+        await provisionDemoStore(user.id);
+      }
+
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
       toast.success('Exploring demo mode');
-      redirectAfterAuth(user.role);
+      navigate('/dashboard');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Demo login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });

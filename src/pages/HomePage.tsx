@@ -29,7 +29,7 @@ export const HomePage: React.FC = () => {
   const handleDemoLogin = async (type: 'owner' | 'customer') => {
     setDemoLoading(type);
     try {
-      await loginDemo();
+      await loginDemo(type);
     } catch (error) {
       console.error('Demo login failed:', error);
       toast.error('Demo login failed. Please try again.');

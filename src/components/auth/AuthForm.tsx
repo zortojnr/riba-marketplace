@@ -129,7 +129,7 @@ export const AuthForm: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={loginDemo}
+                onClick={() => loginDemo('owner')}
                 className="auth__demo-button"
                 aria-label="Try demo as Amina Bello"
               >
