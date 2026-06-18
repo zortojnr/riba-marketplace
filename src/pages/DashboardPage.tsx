@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
-import { Package, ShoppingCart, TrendingUp, Users, Settings, Plus } from 'lucide-react';
+import { Link, Navigate } from 'react-router-dom';
+import { Package, ShoppingCart, ExternalLink, Settings, Plus } from 'lucide-react';
 import { ShareStore } from '@/components/sharing/ShareStore';
+import { supabase } from '@/lib/supabase';
+import { mapStoreRowToStore, type StoreRow } from '@/lib/mappers';
+import type { Store } from '@/types';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -232,87 +235,93 @@ const CustomerDashboardContent: React.FC = () => {
 
 const BusinessOwnerDashboard = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = React.useState(true);
+  const [store, setStore] = React.useState<Store | null>(null);
+  const [productCount, setProductCount] = React.useState(0);
+  const [orderCount, setOrderCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data: storeRow, error: storeError } = await supabase
+        .from('stores')
+        .select('*')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+      if (cancelled) return;
+
+      if (storeError || !storeRow) {
+        setStore(null);
+        setLoading(false);
+        return;
+      }
+
+      const mappedStore = mapStoreRowToStore(storeRow as StoreRow);
+      setStore(mappedStore);
+
+      const [{ count: products }, { count: orders }] = await Promise.all([
+        supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          .eq('store_id', mappedStore.id),
+        supabase
+          .from('orders')
+          .select('id', { count: 'exact', head: true })
+          .eq('store_id', mappedStore.id),
+      ]);
+      if (cancelled) return;
+
+      setProductCount(products ?? 0);
+      setOrderCount(orders ?? 0);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 pb-16 flex items-center justify-center">
+        <div className="text-center">
+          <ShoppingCart className="w-10 h-10 text-emerald-600 mx-auto mb-4 animate-pulse" />
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!store) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  const storeUrl = `${window.location.origin}/store/${store.slug}`;
 
   const stats = [
     {
       title: 'Total Orders',
-      value: '24',
-      change: '+12%',
+      value: orderCount,
       icon: ShoppingCart,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Total Revenue',
-      value: '₦125,000',
-      change: '+8%',
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
       title: 'Total Products',
-      value: '12',
-      change: '+2',
+      value: productCount,
       icon: Package,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
-    },
-    {
-      title: 'Customers',
-      value: '156',
-      change: '+23',
-      icon: Users,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
-    },
-  ];
-
-  const recentOrders = [
-    {
-      id: '#ORD-001',
-      customer: 'Amina Bello',
-      amount: '₦15,000',
-      status: 'pending',
-      date: '2024-01-15',
-    },
-    {
-      id: '#ORD-002',
-      customer: 'Usman Abdullahi',
-      amount: '₦8,500',
-      status: 'confirmed',
-      date: '2024-01-14',
-    },
-    {
-      id: '#ORD-003',
-      customer: 'Hafsa Aliyu',
-      amount: '₦22,000',
-      status: 'delivered',
-      date: '2024-01-13',
-    },
-  ];
-
-  const topProducts = [
-    {
-      name: 'Tuwo Shinkafa',
-      sales: 45,
-      revenue: '₦67,500',
-    },
-    {
-      name: 'Suya',
-      sales: 32,
-      revenue: '₦48,000',
-    },
-    {
-      name: 'Dambu Nama',
-      sales: 28,
-      revenue: '₦14,000',
     },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-16">
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -324,8 +333,17 @@ const BusinessOwnerDashboard = () => {
               Welcome back, {user?.name}!
             </h1>
             <p className="text-gray-600">
-              Here's what's happening with your store today.
+              Here's what's happening with {store.name} today.
             </p>
+            <Link
+              to={`/store/${store.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-500 font-medium"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View your storefront
+            </Link>
             {user?.email?.endsWith('@riba.demo') && (
               <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 text-xs rounded-full border border-gray-200 text-gray-700">
                 <span>Demo Mode</span>
@@ -338,7 +356,7 @@ const BusinessOwnerDashboard = () => {
           <div className="mb-8">
             <div className="flex flex-wrap gap-4">
               <Link
-                to="/products/new"
+                to="/products"
                 className="btn btn-primary flex items-center space-x-2"
               >
                 <Plus className="h-4 w-4" />
@@ -355,7 +373,7 @@ const BusinessOwnerDashboard = () => {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             {stats.map((stat, index) => (
               <motion.div
                 key={stat.title}
@@ -368,7 +386,6 @@ const BusinessOwnerDashboard = () => {
                   <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                     <stat.icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
-                  <span className="text-sm font-medium text-green-600">{stat.change}</span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
                 <p className="text-gray-600 text-sm">{stat.title}</p>
@@ -376,45 +393,23 @@ const BusinessOwnerDashboard = () => {
             ))}
           </div>
 
-          {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Recent Orders */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-card shadow-sm border border-gray-200"
-            >
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+          {/* Recent Orders */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-card shadow-sm border border-gray-200 mb-8"
+          >
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+            </div>
+            {orderCount === 0 ? (
+              <div className="p-8 text-center">
+                <ShoppingCart className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-600">No orders yet.</p>
+                <p className="text-sm text-gray-500">Orders placed on your storefront will show up here.</p>
               </div>
-              <div className="divide-y divide-gray-200">
-                {recentOrders.map((order) => (
-                  <div key={order.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">{order.id}</p>
-                        <p className="text-sm text-gray-600">{order.customer}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">{order.amount}</p>
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            order.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : order.status === 'confirmed'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-2">{order.date}</p>
-                  </div>
-                ))}
-              </div>
+            ) : (
               <div className="p-4 border-t border-gray-200">
                 <Link
                   to="/orders"
@@ -423,48 +418,8 @@ const BusinessOwnerDashboard = () => {
                   View all orders →
                 </Link>
               </div>
-            </motion.div>
-
-            {/* Top Products */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-card shadow-sm border border-gray-200"
-            >
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Top Products</h2>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {topProducts.map((product, index) => (
-                  <div key={product.name} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                          <span className="text-primary-600 font-semibold text-sm">
-                            {index + 1}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{product.name}</p>
-                          <p className="text-sm text-gray-600">{product.sales} sales</p>
-                        </div>
-                      </div>
-                      <p className="font-medium text-gray-900">{product.revenue}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="p-4 border-t border-gray-200">
-                <Link
-                  to="/products"
-                  className="text-primary-600 hover:text-primary-500 text-sm font-medium"
-                >
-                  View all products →
-                </Link>
-              </div>
-            </motion.div>
-          </div>
+            )}
+          </motion.div>
 
           {/* Share Store Section */}
           <motion.div
@@ -472,10 +427,10 @@ const BusinessOwnerDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <ShareStore 
-              storeName="Demo Store" 
-              storeUrl="https://riba.store/demo-store" 
-              themeColor="#3B82F6"
+            <ShareStore
+              storeName={store.name}
+              storeUrl={storeUrl}
+              themeColor={store.themeColor || '#3B82F6'}
             />
           </motion.div>
         </motion.div>
