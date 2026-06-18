@@ -2,11 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, Navigate } from 'react-router-dom';
-import { Package, ShoppingCart, ExternalLink, Settings, Plus } from 'lucide-react';
+import { Package, ShoppingCart, ExternalLink, Settings, Plus, Store as StoreIcon } from 'lucide-react';
 import { ShareStore } from '@/components/sharing/ShareStore';
 import { supabase } from '@/lib/supabase';
-import { mapStoreRowToStore, type StoreRow } from '@/lib/mappers';
-import type { Store } from '@/types';
+import { mapStoreRowToStore, mapOrderRowToOrder, type StoreRow, type OrderRow } from '@/lib/mappers';
+import type { Store, Order } from '@/types';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -20,66 +20,62 @@ export const DashboardPage: React.FC = () => {
   return <BusinessOwnerDashboard />;
 };
 
+const QUICK_CATEGORIES: { value: NonNullable<Store['businessType']>; label: string; icon: string; color: string }[] = [
+  { value: 'food', label: 'Food', icon: '🍔', color: 'bg-orange-100 text-orange-600' },
+  { value: 'products', label: 'Products', icon: '🛍️', color: 'bg-pink-100 text-pink-600' },
+  { value: 'services', label: 'Services', icon: '🧰', color: 'bg-blue-100 text-blue-600' },
+];
+
+type RecentOrder = Order & { storeName: string; storeSlug: string };
+
 const CustomerDashboardContent: React.FC = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = React.useState(true);
+  const [featuredStores, setFeaturedStores] = React.useState<Store[]>([]);
+  const [recentOrders, setRecentOrders] = React.useState<RecentOrder[]>([]);
 
-  const featuredStores = [
-    {
-      id: '1',
-      name: 'Amina\'s Fashion Hub',
-      description: 'Latest African fashion and accessories',
-      logo: '/assets/images/store-placeholder.png',
-      rating: 4.8,
-      deliveryTime: '30-45 min',
-      categories: ['Fashion', 'Accessories'],
-    },
-    {
-      id: '2',
-      name: 'Fresh Mart',
-      description: 'Fresh groceries and organic products',
-      logo: '/assets/images/store-placeholder.png',
-      rating: 4.6,
-      deliveryTime: '20-30 min',
-      categories: ['Groceries', 'Organic'],
-    },
-    {
-      id: '3',
-      name: 'Tech Zone',
-      description: 'Latest gadgets and electronics',
-      logo: '/assets/images/store-placeholder.png',
-      rating: 4.9,
-      deliveryTime: '45-60 min',
-      categories: ['Electronics', 'Gadgets'],
-    },
-  ];
+  React.useEffect(() => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
 
-  const recentOrders = [
-    {
-      id: '#ORD-001',
-      store: 'Amina\'s Fashion Hub',
-      items: 2,
-      total: '₦15,000',
-      status: 'delivered',
-      date: '2024-01-15',
-    },
-    {
-      id: '#ORD-002',
-      store: 'Fresh Mart',
-      items: 5,
-      total: '₦8,500',
-      status: 'preparing',
-      date: '2024-01-16',
-    },
-  ];
+      const [{ data: storeRows }, { data: orderRows }] = await Promise.all([
+        supabase
+          .from('stores')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(3),
+        supabase
+          .from('orders')
+          .select('*, order_items(*), stores(name, slug)')
+          .eq('customer_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(3),
+      ]);
+      if (cancelled) return;
 
-  const quickCategories = [
-    { name: 'Fashion', icon: '🛍️', color: 'bg-pink-100 text-pink-600' },
-    { name: 'Food', icon: '🍔', color: 'bg-orange-100 text-orange-600' },
-    { name: 'Electronics', icon: '💻', color: 'bg-blue-100 text-blue-600' },
-    { name: 'Groceries', icon: '🥬', color: 'bg-green-100 text-green-600' },
-    { name: 'Beauty', icon: '💄', color: 'bg-purple-100 text-purple-600' },
-    { name: 'Home', icon: '🏠', color: 'bg-yellow-100 text-yellow-600' },
-  ];
+      setFeaturedStores(((storeRows ?? []) as StoreRow[]).map(mapStoreRowToStore));
+
+      type JoinedOrderRow = OrderRow & { stores: { name: string; slug: string } | null };
+      setRecentOrders(
+        ((orderRows ?? []) as JoinedOrderRow[]).map((row) => ({
+          ...mapOrderRowToOrder(row),
+          storeName: row.stores?.name ?? 'Store',
+          storeSlug: row.stores?.slug ?? '',
+        }))
+      );
+
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   return (
     <div className="customer-dashboard">
@@ -111,9 +107,6 @@ const CustomerDashboardContent: React.FC = () => {
         <Link to="/orders" className="customer-dashboard__action-button customer-dashboard__action-button--secondary">
           📋 My Orders
         </Link>
-        <Link to="/favorites" className="customer-dashboard__action-button customer-dashboard__action-button--secondary">
-          ❤️ Favorites
-        </Link>
       </motion.div>
 
       {/* Quick Categories */}
@@ -125,20 +118,21 @@ const CustomerDashboardContent: React.FC = () => {
       >
         <h2 className="customer-dashboard__section-title">Shop by Category</h2>
         <div className="customer-dashboard__category-grid">
-          {quickCategories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + index * 0.05 }}
-              whileHover={{ scale: 1.05 }}
-              className="customer-dashboard__category-card"
-            >
-              <div className={`customer-dashboard__category-icon ${category.color}`}>
-                <span className="text-2xl">{category.icon}</span>
-              </div>
-              <span className="customer-dashboard__category-name">{category.name}</span>
-            </motion.div>
+          {QUICK_CATEGORIES.map((category, index) => (
+            <Link key={category.value} to={`/stores?type=${category.value}`}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + index * 0.05 }}
+                whileHover={{ scale: 1.05 }}
+                className="customer-dashboard__category-card"
+              >
+                <div className={`customer-dashboard__category-icon ${category.color}`}>
+                  <span className="text-2xl">{category.icon}</span>
+                </div>
+                <span className="customer-dashboard__category-name">{category.label}</span>
+              </motion.div>
+            </Link>
           ))}
         </div>
       </motion.div>
@@ -156,45 +150,42 @@ const CustomerDashboardContent: React.FC = () => {
             View all stores →
           </Link>
         </div>
-        <div className="customer-dashboard__store-grid">
-          {featuredStores.map((store, index) => (
-            <motion.div
-              key={store.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + index * 0.1 }}
-              whileHover={{ y: -4 }}
-              className="customer-dashboard__store-card"
-            >
-              <div className="customer-dashboard__store-image">
-                <img 
-                  src={store.logo} 
-                  alt={store.name} 
-                  className="customer-dashboard__store-logo"
-                />
-              </div>
-              <div className="customer-dashboard__store-info">
-                <h3 className="customer-dashboard__store-name">{store.name}</h3>
-                <p className="customer-dashboard__store-description">{store.description}</p>
-                <div className="customer-dashboard__store-meta">
-                  <div className="customer-dashboard__store-rating">
-                    <span className="customer-dashboard__store-rating-text">⭐ {store.rating}</span>
+        {loading ? (
+          <p className="text-gray-600">Loading stores...</p>
+        ) : featuredStores.length === 0 ? (
+          <p className="text-gray-600">No stores have joined RIBA yet.</p>
+        ) : (
+          <div className="customer-dashboard__store-grid">
+            {featuredStores.map((store, index) => (
+              <Link key={store.id} to={`/store/${store.slug}`}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  whileHover={{ y: -4 }}
+                  className="customer-dashboard__store-card"
+                >
+                  <div className="customer-dashboard__store-image">
+                    <div className="customer-dashboard__store-logo flex items-center justify-center bg-emerald-100">
+                      <StoreIcon className="w-6 h-6 text-emerald-600" />
+                    </div>
                   </div>
-                  <div className="customer-dashboard__store-delivery">
-                    <span className="customer-dashboard__store-delivery-text">🕒 {store.deliveryTime}</span>
+                  <div className="customer-dashboard__store-info">
+                    <h3 className="customer-dashboard__store-name">{store.name}</h3>
+                    <p className="customer-dashboard__store-description">{store.description}</p>
+                    {store.businessType && (
+                      <div className="customer-dashboard__store-categories">
+                        <span className="customer-dashboard__store-category capitalize">
+                          {store.businessType}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="customer-dashboard__store-categories">
-                  {store.categories.map((category) => (
-                    <span key={category} className="customer-dashboard__store-category">
-                      {category}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       {/* Recent Orders */}
@@ -210,24 +201,30 @@ const CustomerDashboardContent: React.FC = () => {
             View all orders →
           </Link>
         </div>
-        <div className="customer-dashboard__order-list">
-          {recentOrders.map((order) => (
-            <div key={order.id} className="customer-dashboard__order-card">
-              <div className="customer-dashboard__order-info">
-                <div className="customer-dashboard__order-store">{order.store}</div>
-                <div className="customer-dashboard__order-details">
-                  {order.items} items • {order.total}
+        {loading ? (
+          <p className="text-gray-600">Loading orders...</p>
+        ) : recentOrders.length === 0 ? (
+          <p className="text-gray-600">You haven't placed any orders yet.</p>
+        ) : (
+          <div className="customer-dashboard__order-list">
+            {recentOrders.map((order) => (
+              <div key={order.id} className="customer-dashboard__order-card">
+                <div className="customer-dashboard__order-info">
+                  <div className="customer-dashboard__order-store">{order.storeName}</div>
+                  <div className="customer-dashboard__order-details">
+                    {order.items.length} items • {order.total.toLocaleString('en-NG', { style: 'currency', currency: order.currency, minimumFractionDigits: 0 })}
+                  </div>
+                  <div className="customer-dashboard__order-date">{new Date(order.createdAt).toLocaleDateString()}</div>
                 </div>
-                <div className="customer-dashboard__order-date">{order.date}</div>
+                <div className="customer-dashboard__order-status">
+                  <span className={`customer-dashboard__order-status-badge customer-dashboard__order-status-badge--${order.status}`}>
+                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  </span>
+                </div>
               </div>
-              <div className="customer-dashboard__order-status">
-                <span className={`customer-dashboard__order-status-badge customer-dashboard__order-status-badge--${order.status}`}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );

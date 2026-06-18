@@ -8,6 +8,7 @@ import { LayoutWrapper } from './components/layout/LayoutWrapper';
 import { AuthPage } from './pages/AuthPage';
 import { HomePage } from './pages/HomePage';
 import ProtectedStorePage from './pages/ProtectedStorePage';
+import { StoresPage } from './pages/StoresPage';
 import { CartPage } from './pages/CartPage';
 import { CheckoutPage } from './pages/CheckoutPage';
 import { SharedProductPage } from './pages/SharedProductPage';
@@ -40,6 +41,7 @@ function App() {
                         {/* Public Routes - Landing as entry point */}
                         <Route path="/" element={<HomePage />} />
                         <Route path="/auth" element={<AuthPage />} />
+                        <Route path="/stores" element={<StoresPage />} />
                         <Route path="/store/:slug" element={<ProtectedStorePage />} />
                         <Route path="/store/:slug/product/:productId" element={<SharedProductPage />} />
                         <Route path="/cart" element={<CartPage />} />
