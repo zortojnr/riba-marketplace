@@ -180,12 +180,12 @@ export const CheckoutPage: React.FC = () => {
                       Full Name *
                     </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                       <input
                         {...register('name')}
                         type="text"
                         id="name"
-                        className="input pl-10"
+                        className="input input--with-icon w-full"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -199,12 +199,12 @@ export const CheckoutPage: React.FC = () => {
                       Phone Number *
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                       <input
                         {...register('phone')}
                         type="tel"
                         id="phone"
-                        className="input pl-10"
+                        className="input input--with-icon w-full"
                         placeholder="Enter your phone number"
                       />
                     </div>
@@ -218,12 +218,12 @@ export const CheckoutPage: React.FC = () => {
                       Email (Optional)
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
                       <input
                         {...register('email')}
                         type="email"
                         id="email"
-                        className="input pl-10"
+                        className="input input--with-icon w-full"
                         placeholder="Enter your email address"
                       />
                     </div>
