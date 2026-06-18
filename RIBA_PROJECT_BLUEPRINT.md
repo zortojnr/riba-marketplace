@@ -26,24 +26,29 @@ Status key used throughout: `DONE` working and verified, `IN PROGRESS` partially
 | :---- | :---- | :---- |
 | Frontend framework | React 19 \+ TypeScript \+ Vite (rolldown-vite) | Already built, fast dev loop, large ecosystem |
 | Styling | Tailwind CSS v3 | Already built, utility-first, consistent with design tokens |
-| Backend framework | None — Supabase as backend-as-a-service | No custom server to host/maintain; Postgres \+ Auth \+ RLS cover the MVP's needs |
+| Backend framework | None for app data — Supabase as backend-as-a-service. A thin Vercel serverless layer (`api/`) exists solely for payment secret handling | No custom server to host/maintain for app data; Postgres \+ Auth \+ RLS cover the MVP's needs. Payment provider secret keys can't live in client code, so that one slice needs a server |
 | Primary database | Supabase Postgres | Managed, RLS gives row-level security without a custom auth middleware layer |
 | Cache | None yet | Not needed at current scale |
 | Queue | None yet | Not needed at current scale |
 | Auth provider | Supabase Auth (email/password now, Google OAuth scaffolded but not enabled) | Built-in session handling, integrates directly with RLS via `auth.uid()` |
-| Hosting | Vercel (frontend only) | `vercel.json` already configured for Vite output |
+| Hosting | Vercel (frontend \+ `api/` serverless functions) | `vercel.json` already configured for Vite output; `/api/(.*)` rewrite routes to the serverless functions |
 | CI/CD | None yet | Manual deploy via Vercel git integration |
 | Monorepo? | No | Single Vite app |
 
-Dependencies present in `package.json` worth noting: `zustand` and `swr` are installed but **unused anywhere in `src/`**. Either use them deliberately or remove them, don't leave dead weight in the dependency tree.
+`zustand` and `swr` were installed but unused anywhere in `src/` — removed from `package.json`.
 
 ---
 
 ## PHASE 3 — BACKEND DESIGN
 
-### 3.1 Database Design — `DONE` (schema written, not yet run against a live project)
+### 3.1 Database Design — `DONE` (schema written; confirm it's been run against your live Supabase project before trusting any of this in production)
 
-Schema lives at `supabase/migrations/0001_init.sql`. Five tables:
+Schema lives at `supabase/migrations/`, two files, run in order:
+
+| File | Purpose |
+| :---- | :---- |
+| `0001_init.sql` | Five core tables: `profiles`, `stores`, `products`, `orders`, `order_items`, all RLS-enabled |
+| `0002_admin_role.sql` | Adds `admin` as a valid `profiles.role` value plus admin-only read/update policies. Was previously sitting at the repo root instead of `supabase/migrations/` (wouldn't have been picked up by migration tooling from there) — moved into place. No signup flow grants this role; per the file's own comment, promote a user manually via the SQL Editor, never through app UI. |
 
 | Table | Purpose | Key relationships |
 | :---- | :---- | :---- |
@@ -53,66 +58,49 @@ Schema lives at `supabase/migrations/0001_init.sql`. Five tables:
 | `orders` | A customer's order against a store. | `store_id` → `stores.id`, `customer_id` → `profiles.id` |
 | `order_items` | Line items on an order, price/name snapshotted at order time. | `order_id` → `orders.id`, `product_id` → `products.id` |
 
-Row Level Security is enabled on every table. The rule of thumb used throughout: storefronts and their products are publicly readable (anyone can browse a store without logging in), but only the owning row's `owner_id`/`customer_id` matching `auth.uid()` can write to it. Full policy text is in the migration file, don't re-derive it from memory, read the file.
+Row Level Security is enabled on every table. The rule of thumb used throughout: storefronts and their products are publicly readable (anyone can browse a store without logging in), but only the owning row's `owner_id`/`customer_id` matching `auth.uid()` can write to it. Full policy text is in the migration files, don't re-derive it from memory, read the files.
 
-### 3.2 API Contract — `IN PROGRESS`
+### 3.2 API Contract — `DONE`
 
-There is no REST API. All data access goes through the Supabase JS client directly from the frontend, governed by RLS instead of an API authorization layer. This is a deliberate architecture choice for this project's scale, not an oversight.
+There is no REST API for app data. All data access goes through the Supabase JS client directly from the frontend, governed by RLS instead of an API authorization layer. This is a deliberate architecture choice for this project's scale, not an oversight.
 
-`src/utils/api.ts` is a **leftover dead file**. It defines a REST client (`apiClient`) pointing at `http://localhost:3000/api`, a server that does not exist anywhere in this repo or in the Vercel config. Its auth methods (`login`, `signup`, `googleLogin`) have already been replaced by direct Supabase calls in `AuthContext.tsx`. The remaining methods (`getStoreBySlug`, `getProducts`, `createProduct`, `createOrder`, `initializePaystackPayment`, etc.) are still referenced by `StoreContext.tsx`, `ProductsPage.tsx`, and `OrdersPage.tsx`, and **will fail in production** because the endpoint doesn't exist. These need to be replaced with direct Supabase queries, table by table, as each phase below gets built. Don't patch `api.ts` to point somewhere new, delete the dead methods as you replace each one.
+The old `src/utils/api.ts` dead REST client (pointing at a nonexistent `localhost:3000/api`) and the dead `StoreContext.tsx` that was its last consumer have both been **deleted**. Every page now talks to Supabase directly.
+
+The one real server-side surface is `api/payments/paystack/` (Vercel serverless functions) — see Phase 6 below. It exists because Paystack's secret key can't be held in client code, not because the app needed a general-purpose API layer.
 
 ---
 
 ## PHASE 4 — FRONTEND DESIGN
 
-### 4.1 Screen Map — `DONE` (routes exist, several render fake data)
+### 4.1 Screen Map — `DONE` (routes exist; one page still genuinely unbuilt, see SettingsPage and SharedProductPage below)
 
 | Route | Page | Status |
 | :---- | :---- | :---- |
-| `/` | HomePage | DONE (static landing) |
+| `/` | HomePage | DONE (static landing, plus working "Demo Store Owner" / "Demo Customer" buttons — see Phase 5.1) |
 | `/auth` | AuthPage | DONE (real signup/login) |
-| `/onboarding` | OnboardingPage | BROKEN — form validates, then fakes a 1.5s delay and discards everything. No store is ever created. |
-| `/store/:slug` | ProtectedStorePage | BROKEN — ignores the slug, always renders a hardcoded "Demo Fashion Hub" with hardcoded products |
-| `/store/:slug/product/:productId` | SharedProductPage | Uses mock data |
+| `/onboarding` | OnboardingPage | DONE — inserts a real row into `stores`, validates the slug isn't taken |
+| `/store/:slug` | ProtectedStorePage | DONE — fetches the real store by slug and its real, available products via `CustomerAccessFlow`. Shows a real "Store Not Found" state for missing/inactive stores, no mock fallback |
+| `/store/:slug/product/:productId` | SharedProductPage | **STALE** — still 100% mock data (`loadProduct` fakes a delay and returns a hardcoded "Premium Organic Coffee Beans" product regardless of the URL). Not touched yet; next thing to wire if shared product links matter |
 | `/cart` | CartPage | DONE (client-side cart logic, no backend dependency) |
-| `/checkout` | CheckoutPage | BROKEN — order creation calls the dead `apiClient.createOrder` |
-| `/dashboard` | DashboardPage | BROKEN — owner view and customer view both render hardcoded arrays (fake stores, fake recent orders) regardless of what the logged-in user actually owns |
-| `/products` | ProductsPage | BROKEN — CRUD calls go through the dead `apiClient` |
-| `/orders` | OrdersPage | BROKEN — same, dead `apiClient` |
-| `/settings` | SettingsPage | Not yet audited against real data |
-| `/test` | ComprehensiveTestSuite | Should not be a live production route. Move behind a dev-only flag or delete from `App.tsx` before launch. |
+| `/checkout` | CheckoutPage | DONE for pay-on-pickup — inserts a real `orders` row \+ `order_items`, `customer_id` from the session, redirects unauthenticated visitors to `/auth` with a return path. Paystack/Flutterwave radio options exist in the form but aren't wired to a real charge yet, see Phase 6 |
+| `/dashboard` | DashboardPage | Owner view: DONE — real store, real product/order counts, redirects to `/onboarding` if no store exists yet. Customer view: **STALE** — still renders hardcoded "featured stores" and "recent orders" arrays, not wired to real data |
+| `/products` | ProductsPage | DONE — real CRUD against `products`, scoped to the owner's store |
+| `/orders` | OrdersPage | DONE — owners see orders against their store, customers see their own order history, both scoped via RLS rather than a frontend permission check |
+| `/settings` | SettingsPage | **BROKEN** — purely static form markup. Inputs aren't wired to any state, "Save Changes" has no handler. Nothing here persists anywhere |
+| `/test` | ComprehensiveTestSuite | Fixed — only registered as a route when `import.meta.env.DEV` is true, so it no longer ships in production builds |
 
-Also: `src/pages/StorePage.tsx` exists in the codebase but is **not referenced anywhere in `App.tsx`**. It's dead code from an earlier iteration, left behind when `ProtectedStorePage` replaced it. Confirm it's truly unused, then delete it rather than letting two competing "store page" implementations sit in the repo.
+`src/pages/StorePage.tsx` (the old dead duplicate of `ProtectedStorePage`) has been deleted. `src/components/auth/EnhancedAuthForm.tsx` was also found to be dead (zero imports anywhere) and deleted.
 
-### 4.2 Known UI/Styling Inconsistencies — `STALE` / needs cleanup
+### 4.2 Known UI/Styling Inconsistencies — `DONE`
 
-These are concrete, verified issues, not stylistic opinions:
+1. ~~README brand colors don't match the actual theme~~ — **Fixed.** `README.md` now says emerald `#0B6E4F` (matching `tailwind.config.js`) instead of the stale dark green `#0D2E27`.
+2. ~~Global dark-mode background leak in `src/index.css`~~ — **Already fixed in an earlier pass.** The rule is scoped to `body.home-bg` (toggled by `HomePage` on mount/unmount), not a bare `html, body` selector.
+3. **`src/index.css` is 1,956 lines.** Still true, still not audited line-by-line for dead/conflicting rules. Lower priority than the items above since it isn't actively causing a bug right now — flagged here so it doesn't get forgotten, not treated as blocking.
+4. ~~Two components both named `ProductModal`~~ — **Fixed.** `src/components/store/ProductModal.tsx` → `ProductDetailModal.tsx` (customer-facing product view), `src/components/products/ProductModal.tsx` → `ProductFormModal.tsx` (owner's create/edit form). All imports updated.
 
-1. **`README.md`'s brand colors don't match the actual implemented theme.** The README says the brand is dark green `#0D2E27` with cream `#F3F1EA` accents. The actual `tailwind.config.js` primary palette and `DESIGN_SYSTEM.md` both use emerald `#0B6E4F` with gray neutrals, and that's what's actually rendered (e.g. `AuthPage.tsx` uses `emerald-50`/`emerald-100`). Pick one source of truth (the Tailwind config is the one actually running) and update the README to match.  
-     
-2. **A global dark-mode background leak in `src/index.css`.** Near the bottom of the file (around line 1866), under a comment that says "Landing page overflow and navbar transparency fixes," there's:  
-     
-   html, body {  
-     
-     background-color: \#0b1016;  
-     
-   }  
-     
-   .navbar, .navbar.scrolled {  
-     
-     background: \#0b1016 \!important;  
-     
-   }  
-     
-   This sets a near-black background on `html, body` globally, every page in the app, not just the landing page, despite the comment's intent. Every other page is designed with light backgrounds (`bg-gray-50`, `bg-gradient-to-br from-primary-50`). This needs to be scoped to the landing route specifically (a class on the landing page's root container, not a global element selector), not left as a blanket override.  
-     
-3. **`src/index.css` is 1,901 lines.** That's a lot of raw CSS sitting alongside a fully configured Tailwind setup, and it's the kind of file that accumulates conflicting overrides from multiple iterative AI-assisted sessions (there's a `.trae/documents/` folder in the repo root full of past UI-only prompt specs, confirming this history). Before adding more styling, audit this file for dead/conflicting rules rather than appending to it.  
-     
-4. **Two components are both named `ProductModal` in different folders** (`src/components/store/ProductModal.tsx` and `src/components/products/ProductModal.tsx`). They serve genuinely different purposes (one is the customer-facing product detail view, the other is the owner's create/edit form), so this isn't dead code, but the identical naming is a real source of confusion when navigating the codebase or wiring up imports. Rename them to reflect what they actually do, e.g. `ProductDetailModal` and `ProductFormModal`.
+### 4.3 UI States — `IN PROGRESS`
 
-### 4.3 UI States — `PLANNED`
-
-Every screen should handle: loading, empty, error, and populated states. Once real data replaces the mock arrays (Phase by phase below), audit each page against these four states, most currently only render the "populated with fake data" state and have never been tested against a genuine loading spinner or an empty store with zero products.
+Every screen should handle: loading, empty, error, and populated states. `ProtectedStorePage`, `ProductsPage`, `OrdersPage`, and `DashboardPage` now all have real loading spinners and real empty states (e.g. "No products available", "No orders yet", "No store yet") instead of only ever rendering mock data. `SharedProductPage` and `SettingsPage` still don't, since they're not wired to real data at all yet (see 4.1).
 
 ---
 
@@ -148,15 +136,17 @@ supabase-js stores the session and handles refresh automatically
 
 AuthContext fetches the profiles row, maps it to the app's \`User\` type,
 
-redirects: role \= owner → /onboarding, role \= customer → /dashboard
+redirects to wherever the user was headed (e.g. checkout), or role \= owner → /onboarding, role \= customer → /dashboard
 
-Login (`signInWithPassword`) and logout (`signOut`) follow the same pattern. Session restoration on page load and cross-tab sync both go through `supabase.auth.onAuthStateChange`, implemented in `AuthContext.tsx`.
+Login (`signInWithPassword`) and logout (`signOut`) follow the same pattern. Session restoration on page load and cross-tab sync both go through `supabase.auth.onAuthStateChange`, implemented in `AuthContext.tsx`. `ProtectedRoute` and `CheckoutPage` both redirect to `/auth` with `state: { from: location }` when a session is required; `AuthContext` honors that return path after a successful login/signup instead of always landing on the role-based default page.
+
+**Demo accounts** (`HomePage`'s "Demo Store Owner" / "Demo Customer" buttons, and `AuthForm`'s "Try Demo (Amina Bello)" button): `loginDemo(role)` creates a real, throwaway Supabase account for the requested role — previously both HomePage buttons silently created an **owner** account regardless of which one was clicked, this is fixed. A demo **owner** account is also auto-seeded with one store ("Amina's Fashion Hub") and three products so it lands on a populated, working dashboard immediately instead of bouncing through the onboarding form. A demo **customer** account lands on `/dashboard`'s customer view, which still shows static placeholder "featured stores"/"recent orders" content (see 4.1) rather than real ones.
 
 **Token strategy:**
 
 - Access/refresh token lifetimes: managed by Supabase project defaults, not configured by the app  
 - Storage: supabase-js default (localStorage). This is a deliberate, accepted tradeoff for this MVP, see the security checklist note below, not an oversight  
-- "Demo" login creates a real, throwaway Supabase account with generated credentials rather than a fake local user. It's a genuine signup, not a mock
+- "Demo" logins create real, throwaway Supabase accounts with generated credentials rather than fake local users. They're genuine signups, not mocks
 
 **Email confirmation:** must be turned off in the Supabase project (Authentication → Providers → Email → "Confirm email") for the signup flow to return an immediate session. If this is re-enabled later for production, the signup flow needs a "check your email" UI state, which doesn't exist yet.
 
@@ -167,8 +157,7 @@ Login (`signInWithPassword`) and logout (`signOut`) follow the same pattern. Ses
 | Guest (no session) | Can read any store where `is_active = true` and its available products. Cannot write anything. |
 | Customer | Everything a guest can do, plus: can create orders under their own `customer_id`, can read their own orders and order items. Cannot read or modify other customers' orders, or any store/product data. |
 | Owner | Can create one or more stores under their own `owner_id`. Can fully manage (create/update/delete) products belonging to their own stores. Can read and update the status of orders placed against their own stores. Cannot touch another owner's store, products, or orders. |
-
-There is no separate "admin" role yet. If one is needed (e.g. for ColAI-style platform moderation), it needs its own policy additions, it does not exist in the current schema.
+| Admin | Schema-level only (`0002_admin_role.sql`): read-only across `profiles`/`stores`/`products`/`orders`/`order_items`, plus store updates. No signup path grants this role and no UI consumes it yet — it exists for a human to promote themselves manually in the SQL Editor when platform moderation is needed. |
 
 ### 5.3 Security Checklist
 
@@ -178,8 +167,8 @@ There is no separate "admin" role yet. If one is needed (e.g. for ColAI-style pl
 - [x] No SQL injection surface, all access through the Supabase client's parameterized query builder, no raw SQL from the frontend  
 - [ ] Rate limiting on auth endpoints, not configured. Supabase has some default protections, but no custom rate limiting has been added  
 - [x] CORS, handled by Supabase project settings, not something this app configures directly  
-- [x] Secrets in env vars: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` only, both are meant to be public (the anon key is safe to expose, RLS is the actual security boundary, not the key's secrecy)  
-- [ ] `npm audit` has not been run as part of this work; package install showed 19 known vulnerabilities (1 low, 7 moderate, 11 high) in dependencies as of this writing. Needs a pass.  
+- [x] Secrets in env vars: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are public by design (RLS is the real boundary). `SUPABASE_SERVICE_ROLE_KEY` and `PAYSTACK_SECRET_KEY` are server-only, no `VITE_` prefix, set in Vercel project settings, never committed  
+- [x] `npm audit` run. 27 → 11 vulnerabilities after `npm audit fix` (no breaking changes applied). All 11 remaining are inside the `@vercel/node` dev-dependency tree (used only to build the `api/` serverless functions, not shipped to the browser) and only resolve via a breaking `@vercel/node@4.0.0` upgrade — left alone pending a deliberate decision to take that upgrade, not blocking  
 - [ ] HTTPS-only enforcement in production, not yet verified on the Vercel deployment  
 - [x] Passwords hashed, handled entirely by Supabase Auth, not something this app implements
 
@@ -189,7 +178,24 @@ There is no separate "admin" role yet. If one is needed (e.g. for ColAI-style pl
 - [x] No `dangerouslySetInnerHTML` usage found with user-supplied content  
 - [ ] CSP headers, not configured in `vercel.json`  
 - [x] Auth tokens not passed in URL query params anywhere in the app  
-- [ ] Sensitive routes (`/dashboard`, `/products`, `/orders`, `/settings`, `/onboarding`) have **no route guard**. Right now, an unauthenticated user can navigate directly to `/dashboard` and the page will render in whatever broken state results from `user` being `null` (mock data will likely still show, since those pages don't check auth state yet). A `ProtectedRoute` wrapper that redirects to `/auth` when there's no session needs to be added before any of these pages are wired to real, sensitive data.
+- [x] Sensitive routes (`/dashboard`, `/products`, `/orders`, `/settings`, `/onboarding`) are wrapped in `ProtectedRoute`, which redirects to `/auth` (with a return path) when there's no session, and to `/dashboard` when the role doesn't match a route's `requireRole`.
+
+---
+
+## PHASE 6 — PAYMENTS
+
+### 6.1 Paystack serverless integration — `IN PROGRESS` (backend built, not yet wired to the checkout UI)
+
+Two Vercel serverless functions under `api/payments/paystack/`:
+
+- `initialize.ts` — client will call this with an `orderId` after the order is inserted via direct Supabase access. Re-reads the order's real `total`/`currency`/`customer_email` from Supabase using the service-role key (never trusts a client-supplied amount), calls Paystack's `transaction/initialize` with the secret key held server-side, stores the returned reference on the order, and returns an `authorizationUrl` for the client to redirect to.
+- `webhook.ts` — Paystack's webhook target. Verifies the HMAC signature over the raw request body, then re-verifies the transaction directly against Paystack's API (doesn't trust the webhook payload alone), then updates the matching order's `payment_status`/`payment_reference` via the service-role client.
+
+`api/_lib/` holds the shared service-role Supabase client and a raw-body reader.
+
+**Deliberately not wired into `CheckoutPage.tsx` yet** — per the working agreement, that happens only after a real test transaction (Paystack test card, test secret key) confirms the initialize → pay → webhook → `payment_status: 'paid'` round-trip actually works end to end. Until then, selecting "Pay with Paystack" or "Pay with Flutterwave" in checkout doesn't charge anyone or update payment status; only "Pay on Pickup" results in a real (unpaid) order today.
+
+Flutterwave was deliberately not built — Paystack was picked as the first provider (see decision in conversation history), Flutterwave can follow the same pattern later if needed.
 
 ---
 
@@ -197,12 +203,15 @@ There is no separate "admin" role yet. If one is needed (e.g. for ColAI-style pl
 
 In priority order, as agreed:
 
-1. **Auth** — `DONE`. Signup, login, logout, session persistence, role-based redirect, RLS-backed authorization. Requires a live Supabase project with the migration run and email confirmation disabled to actually function.  
-2. **Store creation \+ product management** — `PLANNED`. Wire `OnboardingPage` to actually insert a row into `stores`. Wire `ProductsPage` to real CRUD against `products`, scoped to the owner's store. Wire `DashboardPage`'s owner view to show the real store and real product/order counts instead of hardcoded cards. Add the route guard mentioned in 5.3 first, these pages should not be reachable without a session.  
-3. **Customer browsing \+ cart \+ checkout** — `PLANNED`. Wire `ProtectedStorePage` to fetch the real store by slug and its real products instead of the hardcoded "Demo Fashion Hub." Wire `CheckoutPage` to insert real `orders` \+ `order_items` rows. `CartPage`'s client-side logic can likely stay as-is, it doesn't depend on the dead API.  
-4. **Payments (Paystack/Flutterwave)** — `PLANNED`. Stub functions exist in the dead `api.ts` but are called from nowhere in the UI. This needs actual integration: a payment step in checkout, webhook handling for payment confirmation (which will need a small serverless function, since client-side code can't safely hold payment provider secret keys), and `payment_status` updates on the `orders` table.
+1. **Auth** — `DONE`. Signup, login, logout, session persistence, role-based redirect (with return-path support), RLS-backed authorization, working demo accounts for both roles.
+2. **Store creation \+ product management** — `DONE`. `OnboardingPage` inserts a real `stores` row. `ProductsPage` does real CRUD against `products`, scoped to the owner's store. `DashboardPage`'s owner view shows real store/product/order counts.
+3. **Customer browsing \+ cart \+ checkout** — `DONE` for the non-payment path. `ProtectedStorePage` fetches the real store and products by slug. `CheckoutPage` inserts real `orders` \+ `order_items` rows for pay-on-pickup orders. `CartPage`'s client-side logic is unchanged.
+4. **Payments (Paystack)** — `IN PROGRESS`. Serverless `initialize`/`webhook` functions are built (Phase 6.1) but not yet wired into `CheckoutPage.tsx`'s UI — that's the next concrete step, gated on a confirmed test transaction.
 
-Cleanup items from Phase 4.2 and the dead `StorePage.tsx` / `api.ts` methods should be folded into whichever phase touches that code, not treated as a separate fifth phase, fix things as you pass through them.
+Not yet started, not in this roadmap's original four items but discovered along the way:
+- `SharedProductPage` is still fully mock (Phase 4.1).
+- `DashboardPage`'s customer view is still fully mock (Phase 4.1).
+- `SettingsPage` is non-functional static markup (Phase 4.1).
 
 ---
 
@@ -214,4 +223,3 @@ A phase isn't done when the UI renders, it's done when:
 - A second browser/incognito session sees the same data (proves it's not reading from localStorage pretending to be a backend)  
 - RLS was tested by trying the disallowed case (e.g., logging in as Owner A and confirming Owner B's store is not editable), not just the happy path  
 - The relevant route is unreachable without the correct auth state, where that matters
-
