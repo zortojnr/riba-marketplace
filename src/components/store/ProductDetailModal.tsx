@@ -10,6 +10,8 @@ interface ProductDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, quantity: number) => void;
+  businessSlug: string;
+  businessName: string;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -17,6 +19,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   isOpen,
   onClose,
   onAddToCart,
+  businessSlug,
+  businessName,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -198,8 +202,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <ShareProductLink
           productId={product.id}
           productName={product.name}
-          businessSlug="demo-store" // This should be dynamic based on current store
-          businessName="Demo Fashion Hub" // This should be dynamic based on current store
+          businessSlug={businessSlug}
+          businessName={businessName}
           onClose={() => setShowShareModal(false)}
         />
       )}

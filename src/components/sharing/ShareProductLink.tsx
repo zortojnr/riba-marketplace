@@ -23,15 +23,10 @@ export const ShareProductLink: React.FC<ShareProductLinkProps> = ({
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 
-  // Generate a secure token for the shared link
-  const generateShareToken = () => {
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    return `share-${productId}-${timestamp}-${randomString}`;
-  };
-
-  const shareToken = generateShareToken();
-  const shareUrl = `${window.location.origin}/store/${businessSlug}/product/${productId}?token=${shareToken}&ref=shared`;
+  // Products of an active store are publicly readable (RLS), so the link
+  // itself needs no token - anyone who opens it can view (and buy) the
+  // product directly, the same as browsing the storefront.
+  const shareUrl = `${window.location.origin}/store/${businessSlug}/product/${productId}`;
 
   const copyToClipboard = async () => {
     try {
@@ -246,8 +241,7 @@ export const ShareProductLink: React.FC<ShareProductLinkProps> = ({
           {/* Info Message */}
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Customer Access:</strong> Anyone with this link can view the product. 
-              They'll need permission from you to make purchases.
+              <strong>Customer Access:</strong> Anyone with this link can view and buy this product directly.
             </p>
           </div>
         </div>

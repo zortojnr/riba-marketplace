@@ -53,12 +53,12 @@ export const ProtectedStorePage: React.FC = () => {
       };
     }, [store?.id]);
 
-    const handleAddToCart = (product: Product) => {
+    const handleAddToCart = (product: Product, quantity: number = 1) => {
       if (accessType !== 'full') {
         toast.error("You don’t have access to this store!", { duration: 1000 });
         return;
       }
-      addToCart(product, 1);
+      addToCart(product, quantity);
       toast.success(`${product.name} added to cart`);
     };
 
@@ -197,7 +197,9 @@ export const ProtectedStorePage: React.FC = () => {
             product={selectedProduct}
             isOpen={showProductModal}
             onClose={() => setShowProductModal(false)}
-            onAddToCart={(product) => handleAddToCart(product)}
+            onAddToCart={(product, quantity) => handleAddToCart(product, quantity)}
+            businessSlug={store.slug}
+            businessName={store.name}
           />
         )}
       </div>
