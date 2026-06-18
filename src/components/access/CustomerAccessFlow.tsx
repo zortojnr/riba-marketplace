@@ -4,6 +4,9 @@ import { toast } from 'sonner';
 import { Lock, ShoppingBag, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { mapStoreRowToStore, type StoreRow } from '@/lib/mappers';
+import type { Store } from '@/types';
 
 interface CustomerAccessFlowProps {
   businessSlug: string;
@@ -18,6 +21,7 @@ interface BusinessAccess {
   businessName: string;
   isAuthorized: boolean;
   accessType: 'full' | 'restricted' | 'none';
+  store?: Store;
 }
 
 export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({ 
@@ -108,34 +112,33 @@ export const CustomerAccessFlow: React.FC<CustomerAccessFlowProps> = ({
   };
 
   const simulateBusinessAccessCheck = async (slug: string): Promise<BusinessAccess> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock business data - in real app, this would come from your API
-    const mockBusinesses: Record<string, BusinessAccess> = {
-      'demo-store': {
-        hasAccess: true,
-        businessId: 'demo-store-id',
-        businessName: 'Demo Store',
-        isAuthorized: true,
-        accessType: 'full'
-      },
-      'test-business': {
-        hasAccess: true,
-        businessId: 'test-business-id',
-        businessName: 'Test Business',
-        isAuthorized: false,
-        accessType: 'restricted'
-      }
-    };
+    // Active stores (and the owner's own inactive store) are readable by
+    // anyone via RLS, so a successful fetch here means real, full access.
+    // There's no partial/"restricted" access concept in the schema.
+    const { data, error } = await supabase
+      .from('stores')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
 
-    // Return mock data or default to restricted
-    return mockBusinesses[slug] || {
-      hasAccess: false,
-      businessId: slug,
-      businessName: 'Business Not Found',
-      isAuthorized: false,
-      accessType: 'none'
+    if (error || !data) {
+      return {
+        hasAccess: false,
+        businessId: slug,
+        businessName: 'Business Not Found',
+        isAuthorized: false,
+        accessType: 'none'
+      };
+    }
+
+    const store = mapStoreRowToStore(data as StoreRow);
+    return {
+      hasAccess: true,
+      businessId: store.id,
+      businessName: store.name,
+      isAuthorized: true,
+      accessType: 'full',
+      store
     };
   };
 
