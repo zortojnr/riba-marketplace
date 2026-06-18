@@ -120,7 +120,7 @@ riba-marketplace/
 The RIBA brand identity includes:
 
 - **Logo**: Shopping bag icon with "Riba" text
-- **Colors**: Dark green (#0D2E27) with cream/off-white accents (#F3F1EA)
+- **Colors**: Emerald green (#0B6E4F primary) with neutral gray accents, as defined in `tailwind.config.js`
 - **Typography**: Modern, rounded sans-serif font
 - **Iconography**: Custom shopping bag design with handle and rivet details
 
