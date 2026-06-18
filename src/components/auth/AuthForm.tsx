@@ -204,7 +204,7 @@ export const AuthForm: React.FC = () => {
                       {...loginForm.register('password')}
                       type={showPassword ? 'text' : 'password'}
                       id="password"
-                      className="auth__input"
+                      className="auth__input auth__input--password"
                       placeholder="Enter your password"
                       autoComplete="current-password"
                       aria-describedby="password-error"
@@ -401,7 +401,7 @@ export const AuthForm: React.FC = () => {
                         {...signupForm.register('password')}
                         type={showPassword ? 'text' : 'password'}
                         id="password"
-                        className="auth__input"
+                        className="auth__input auth__input--password"
                         placeholder="Create password"
                         autoComplete="new-password"
                         onChange={() => {
@@ -439,7 +439,7 @@ export const AuthForm: React.FC = () => {
                         {...signupForm.register('confirmPassword')}
                         type={showConfirmPassword ? 'text' : 'password'}
                         id="confirmPassword"
-                        className="auth__input"
+                        className="auth__input auth__input--password-validated"
                         placeholder="Confirm password"
                         autoComplete="new-password"
                         onChange={checkPasswordMatch}
