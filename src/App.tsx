@@ -3,6 +3,7 @@ import { MotionConfig } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { AppShell } from './components/layout/AppShell';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { NavigationProvider } from './contexts/NavigationContext';
 import { LayoutWrapper } from './components/layout/LayoutWrapper';
 import { AuthPage } from './pages/AuthPage';
@@ -31,6 +32,7 @@ function App() {
   return (
     <MotionConfig reducedMotion="user">
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <NavigationProvider>
           <CartProvider>
