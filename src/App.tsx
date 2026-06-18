@@ -21,20 +21,18 @@ import { ComprehensiveTestSuite } from './components/testing/ComprehensiveTestSu
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { CartProvider } from './contexts/CartContext';
-import { StoreProvider } from './contexts/StoreContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
 function App() {
   useServiceWorker(); // Initialize service worker for PWA functionality
-  
+
   return (
     <MotionConfig reducedMotion="user">
     <Router>
       <AuthProvider>
         <NavigationProvider>
-          <StoreProvider>
-            <CartProvider>
-              <NotificationProvider>
+          <CartProvider>
+            <NotificationProvider>
                 <div className="min-h-screen bg-gray-50">
                   <LayoutWrapper>
                     <AppShell>
@@ -46,15 +44,18 @@ function App() {
                         <Route path="/store/:slug/product/:productId" element={<SharedProductPage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />
-                        
+
                         {/* Protected Routes */}
                         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                         <Route path="/products" element={<ProtectedRoute requireRole="owner"><ProductsPage /></ProtectedRoute>} />
                         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
                         <Route path="/settings" element={<ProtectedRoute requireRole="owner"><SettingsPage /></ProtectedRoute>} />
                         <Route path="/onboarding" element={<ProtectedRoute requireRole="owner"><OnboardingPage /></ProtectedRoute>} />
-                        <Route path="/test" element={<ComprehensiveTestSuite />} />
-                        
+                        {/* Dev-only: never registered in a production build */}
+                        {import.meta.env.DEV && (
+                          <Route path="/test" element={<ComprehensiveTestSuite />} />
+                        )}
+
                         {/* Legacy routes */}
                         <Route path="/login" element={<Navigate to="/auth" replace />} />
                         <Route path="/register" element={<Navigate to="/auth" replace />} />
@@ -75,9 +76,8 @@ function App() {
                     }}
                   />
                 </div>
-              </NotificationProvider>
-            </CartProvider>
-          </StoreProvider>
+            </NotificationProvider>
+          </CartProvider>
         </NavigationProvider>
       </AuthProvider>
     </Router>
