@@ -131,10 +131,19 @@ export const AuthForm: React.FC = () => {
                 type="button"
                 onClick={() => loginDemo('owner')}
                 className="auth__demo-button"
-                aria-label="Try demo as Amina Bello"
+                aria-label="Try demo as a store owner"
               >
                 <span aria-hidden>🚀</span>
-                Try Demo (Amina Bello)
+                Try Demo (Store Owner)
+              </button>
+              <button
+                type="button"
+                onClick={() => loginDemo('customer')}
+                className="auth__demo-button"
+                aria-label="Try demo as a customer"
+              >
+                <span aria-hidden>🛍️</span>
+                Try Demo (Customer)
               </button>
             </div>
             

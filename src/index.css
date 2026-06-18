@@ -150,7 +150,6 @@ body {
 .auth__card {
   background: var(--auth-card-bg);
   border-radius: var(--auth-border-radius);
-  box-shadow: var(--auth-card-shadow);
   border: var(--auth-card-border);
   padding: var(--auth-padding-y) var(--auth-padding-x);
   position: relative;
@@ -159,6 +158,8 @@ body {
 
 /* Logo Section */
 .auth__logo {
+  display: flex;
+  justify-content: center;
   text-align: center;
   margin-bottom: var(--spacing-3);
 }
