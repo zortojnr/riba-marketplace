@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, MapPin, Phone, Mail } from 'lucide-react';
 import { CustomerAccessFlow, useCustomerAccess } from '@/components/access/CustomerAccessFlow';
 import { ProductCard } from '@/components/store/ProductCard';
-import { ProductModal } from '@/components/store/ProductModal';
+import { ProductDetailModal } from '@/components/store/ProductDetailModal';
 import { useCart } from '@/contexts/CartContext';
 import { supabase } from '@/lib/supabase';
 import { mapProductRowToProduct, type ProductRow } from '@/lib/mappers';
@@ -193,7 +193,7 @@ export const ProtectedStorePage: React.FC = () => {
 
         {/* Product Modal */}
         {selectedProduct && (
-          <ProductModal
+          <ProductDetailModal
             product={selectedProduct}
             isOpen={showProductModal}
             onClose={() => setShowProductModal(false)}

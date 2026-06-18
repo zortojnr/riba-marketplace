@@ -5,14 +5,14 @@ import type { Product } from '@/types';
 import { formatCurrency } from '@/utils';
 import { ShareProductLink } from '@/components/sharing/ShareProductLink';
 
-interface ProductModalProps {
+interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, quantity: number) => void;
 }
 
-export const ProductModal: React.FC<ProductModalProps> = ({
+export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   isOpen,
   onClose,

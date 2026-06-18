@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { mapProductRowToProduct, type ProductRow } from '@/lib/mappers';
 import type { Product, ProductFormData } from '@/types';
 import { formatCurrency } from '@/utils';
-import ProductModal from '@/components/products/ProductModal';
+import ProductFormModal from '@/components/products/ProductFormModal';
 import { Button } from '@/components/ui/Button';
 import { toast } from 'sonner';
 
@@ -455,7 +455,7 @@ const ProductsPage: React.FC = () => {
         </div>
       )}
 
-      <ProductModal
+      <ProductFormModal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}

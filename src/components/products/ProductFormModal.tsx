@@ -25,7 +25,7 @@ interface Props {
   product?: Product | null;
 }
 
-const ProductModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, product }) => {
+const ProductFormModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, product }) => {
   const [imageInput, setImageInput] = useState('');
   const [images, setImages] = useState<string[]>(product?.images || []);
 
@@ -228,4 +228,4 @@ const ProductModal: React.FC<Props> = ({ isOpen, onClose, onSubmit, product }) =
   );
 };
 
-export default ProductModal;
+export default ProductFormModal;
