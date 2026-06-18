@@ -246,23 +246,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginDemo = async (role: User['role'] = 'owner') => {
     dispatch({ type: 'AUTH_START' });
     try {
-      const email = `demo-${role}-${Date.now()}@riba.demo`;
-      const password = crypto.randomUUID();
-      const name = role === 'owner' ? 'Amina Bello' : 'Demo Customer';
+      // The demo-signup Edge Function creates a pre-confirmed user with the
+      // service role, so the demo buttons get an active session right away
+      // without disabling email confirmation for real signups.
+      const { data: demoAccount, error: demoError } = await supabase.functions.invoke<{
+        email: string;
+        password: string;
+      }>('demo-signup', { body: { role } });
+      if (demoError) throw demoError;
+      if (!demoAccount) throw new Error('Demo signup failed');
 
-      const { data: signUpData, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name, role },
-        },
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
+        email: demoAccount.email,
+        password: demoAccount.password,
       });
       if (error) throw error;
-      if (!signUpData.session || !signUpData.user) {
-        throw new Error('Demo signup requires email confirmation to be disabled for this project.');
-      }
 
-      const user = await fetchProfile(signUpData.user.id);
+      const user = await fetchProfile(signInData.user.id);
 
       // A demo owner with no store would just land on the onboarding form,
       // which defeats the point of a one-click demo - seed a store and a
@@ -271,7 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await provisionDemoStore(user.id);
       }
 
-      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signInData.session.access_token } });
       toast.success('Exploring demo mode');
       navigate('/dashboard');
     } catch (error) {

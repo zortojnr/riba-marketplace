@@ -227,12 +227,6 @@ body {
   margin-bottom: var(--spacing-2);
 }
 
-@media (min-width: 480px) {
-  .auth__form-row {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 .auth__form-row .auth__form-group {
   margin-bottom: 0;
 }
