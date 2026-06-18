@@ -50,7 +50,7 @@ function App() {
                         {/* Protected Routes */}
                         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
                         <Route path="/products" element={<ProtectedRoute requireRole="owner"><ProductsPage /></ProtectedRoute>} />
-                        <Route path="/orders" element={<ProtectedRoute requireRole="owner"><OrdersPage /></ProtectedRoute>} />
+                        <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
                         <Route path="/settings" element={<ProtectedRoute requireRole="owner"><SettingsPage /></ProtectedRoute>} />
                         <Route path="/onboarding" element={<ProtectedRoute requireRole="owner"><OnboardingPage /></ProtectedRoute>} />
                         <Route path="/test" element={<ComprehensiveTestSuite />} />

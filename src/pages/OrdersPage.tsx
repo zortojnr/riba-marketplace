@@ -2,34 +2,78 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Filter, Package } from 'lucide-react';
-import { useStore } from '@/contexts/StoreContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { mapOrderRowToOrder, type OrderRow } from '@/lib/mappers';
 import type { Order } from '@/types';
-import { apiClient } from '@/utils/api';
 import { formatCurrency } from '@/utils';
 import { toast } from 'sonner';
 
+type JoinedOrderRow = OrderRow & { stores: { name: string; slug: string } | null };
+
 export const OrdersPage: React.FC = () => {
-  const { currentStore } = useStore();
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [storeNames, setStoreNames] = useState<Record<string, { name: string; slug: string }>>({});
+  const [hasStore, setHasStore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  const isOwner = user?.role === 'owner';
+
   useEffect(() => {
-    if (currentStore?.id) {
-      fetchOrders();
+    if (user?.id) {
+      fetchOrders(user.id, user.role);
     } else {
       setLoading(false);
     }
-  }, [currentStore?.id]);
+  }, [user?.id, user?.role]);
 
-  const fetchOrders = async () => {
-    if (!currentStore?.id) return;
-    
+  const fetchOrders = async (userId: string, role: 'owner' | 'customer') => {
     try {
       setLoading(true);
-      const response = await apiClient.getOrders(currentStore.id);
-      setOrders(response.data as Order[]);
+
+      if (role === 'owner') {
+        const { data: store, error: storeError } = await supabase
+          .from('stores')
+          .select('id')
+          .eq('owner_id', userId)
+          .maybeSingle();
+        if (storeError) throw storeError;
+
+        if (!store) {
+          setHasStore(false);
+          setOrders([]);
+          return;
+        }
+        setHasStore(true);
+
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('store_id', store.id)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        setOrders((data as OrderRow[]).map(mapOrderRowToOrder));
+      } else {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*, order_items(*), stores(name, slug)')
+          .eq('customer_id', userId)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        const rows = data as JoinedOrderRow[];
+        setOrders(rows.map(mapOrderRowToOrder));
+        setStoreNames(
+          rows.reduce<Record<string, { name: string; slug: string }>>((acc, row) => {
+            if (row.stores) acc[row.store_id] = row.stores;
+            return acc;
+          }, {})
+        );
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch orders';
       toast.error(message);
@@ -51,8 +95,10 @@ export const OrdersPage: React.FC = () => {
   };
 
   const filteredOrders = orders.filter(order => {
+    const storeName = storeNames[order.storeId]?.name ?? '';
     const matchesSearch = order.customerInfo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          order.id.toLowerCase().includes(searchTerm.toLowerCase());
+                          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          storeName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -76,13 +122,12 @@ export const OrdersPage: React.FC = () => {
     );
   }
 
-  if (!currentStore?.id) {
+  if (isOwner && !hasStore) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-        
         <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No store selected</h3>
-        <p className="text-gray-600 mb-6">Select or create a store to start managing orders.</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No store yet</h3>
+        <p className="text-gray-600 mb-6">Create your store to start receiving orders.</p>
         <div className="flex items-center justify-center gap-4">
           <Link to="/onboarding" className="btn btn-primary">Create store</Link>
           <Link to="/" className="btn btn-outline">Go to home</Link>
@@ -93,10 +138,12 @@ export const OrdersPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Orders</h1>
-        <p className="text-gray-600">Manage your store orders and track their status</p>
+        <p className="text-gray-600">
+          {isOwner ? 'Manage your store orders and track their status' : 'Your order history across stores'}
+        </p>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -106,13 +153,13 @@ export const OrdersPage: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search orders by customer name or order ID..."
+                placeholder={isOwner ? 'Search orders by customer name or order ID...' : 'Search orders by store or order ID...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <select
@@ -140,7 +187,7 @@ export const OrdersPage: React.FC = () => {
                   Order ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
+                  {isOwner ? 'Customer' : 'Store'}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Items
@@ -168,8 +215,23 @@ export const OrdersPage: React.FC = () => {
                     #{order.id.slice(-8)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{order.customerInfo.name}</div>
-                    <div className="text-sm text-gray-500">{order.customerInfo.phone}</div>
+                    {isOwner ? (
+                      <>
+                        <div className="text-sm font-medium text-gray-900">{order.customerInfo.name}</div>
+                        <div className="text-sm text-gray-500">{order.customerInfo.phone}</div>
+                      </>
+                    ) : (
+                      storeNames[order.storeId] ? (
+                        <Link
+                          to={`/store/${storeNames[order.storeId].slug}`}
+                          className="text-sm font-medium text-primary-600 hover:text-primary-500"
+                        >
+                          {storeNames[order.storeId].name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-gray-500">Store</span>
+                      )
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {order.items.length} items
@@ -196,8 +258,10 @@ export const OrdersPage: React.FC = () => {
             <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
             <p className="text-gray-600 mb-4">
-              {orders.length === 0 
-                ? "You haven't received any orders yet. Share your store link to start receiving orders!"
+              {orders.length === 0
+                ? (isOwner
+                    ? "You haven't received any orders yet. Share your store link to start receiving orders!"
+                    : "You haven't placed any orders yet. Browse a store to get started!")
                 : "No orders match your current filters."
               }
             </p>

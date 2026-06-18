@@ -1,4 +1,4 @@
-import type { Product, Store, User } from '@/types';
+import type { Order, Product, Store, User } from '@/types';
 
 export interface ProfileRow {
   id: string;
@@ -39,6 +39,7 @@ export interface ProductRow {
 
 export const mapProductRowToProduct = (row: ProductRow): Product => ({
   id: row.id,
+  storeId: row.store_id,
   name: row.name,
   description: row.description,
   price: Number(row.price),
@@ -87,4 +88,63 @@ export const mapStoreRowToStore = (row: StoreRow): Store => ({
   city: row.city,
   state: row.state,
   website: row.website ?? undefined,
+});
+
+export interface OrderItemRow {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  name: string;
+  price: number;
+  quantity: number;
+  total: number;
+}
+
+export interface OrderRow {
+  id: string;
+  store_id: string;
+  customer_id: string | null;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string;
+  customer_address: string | null;
+  delivery_method: 'pickup' | 'delivery';
+  subtotal: number;
+  total: number;
+  currency: 'NGN' | 'USD';
+  status: Order['status'];
+  payment_method: Order['paymentMethod'];
+  payment_status: Order['paymentStatus'];
+  payment_reference: string | null;
+  created_at: string;
+  updated_at: string;
+  order_items?: OrderItemRow[];
+}
+
+export const mapOrderRowToOrder = (row: OrderRow): Order => ({
+  id: row.id,
+  storeId: row.store_id,
+  customerInfo: {
+    name: row.customer_name,
+    email: row.customer_email ?? undefined,
+    phone: row.customer_phone,
+    address: row.customer_address ?? undefined,
+    deliveryMethod: row.delivery_method,
+  },
+  items: (row.order_items ?? []).map((item) => ({
+    productId: item.product_id ?? '',
+    name: item.name,
+    price: Number(item.price),
+    quantity: item.quantity,
+    total: Number(item.total),
+  })),
+  subtotal: Number(row.subtotal),
+  total: Number(row.total),
+  currency: row.currency,
+  status: row.status,
+  paymentMethod: row.payment_method,
+  paymentStatus: row.payment_status,
+  paymentReference: row.payment_reference ?? undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });

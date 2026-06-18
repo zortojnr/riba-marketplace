@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
-import { CreditCard, MapPin, User, Phone, Mail } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CreditCard, MapPin, User, Phone, Mail, Loader2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
 import type { CheckoutFormData } from '@/types';
 import { formatCurrency } from '@/utils';
 import { toast } from 'sonner';
@@ -22,8 +24,19 @@ const checkoutSchema = z.object({
 
 export const CheckoutPage: React.FC = () => {
   const { items, total, currency, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Checkout requires a session (orders.customer_id is set from auth.uid()),
+  // so bounce unauthenticated visitors to /auth and bring them straight
+  // back here afterwards instead of letting them fill out a dead form.
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth', { state: { from: location }, replace: true });
+    }
+  }, [authLoading, user, navigate, location]);
 
   const {
     register,
@@ -41,38 +54,74 @@ export const CheckoutPage: React.FC = () => {
   });
 
   const deliveryMethod = watch('deliveryMethod');
-  const paymentMethod = watch('paymentMethod');
 
-  const onSubmit = async (_data: CheckoutFormData) => {
+  const onSubmit = async (data: CheckoutFormData) => {
     if (items.length === 0) {
       toast.error('Your cart is empty');
+      return;
+    }
+    if (!user) {
+      navigate('/auth', { state: { from: location } });
+      return;
+    }
+
+    const storeId = items[0].product.storeId;
+    if (!storeId || items.some((item) => item.product.storeId !== storeId)) {
+      toast.error('Your cart has products from more than one store. Please check out one store at a time.');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Here you would integrate with your payment provider
-      if (paymentMethod === 'paystack') {
-        // Initialize Paystack payment
-        toast.success('Redirecting to Paystack...');
-      } else if (paymentMethod === 'flutterwave') {
-        // Initialize Flutterwave payment
-        toast.success('Redirecting to Flutterwave...');
-      } else if (paymentMethod === 'pay_on_pickup') {
-        // Process order for pickup
-        toast.success('Order placed successfully! You can pay on pickup.');
-        clearCart();
-      }
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          store_id: storeId,
+          customer_id: user.id,
+          customer_name: data.name,
+          customer_email: data.email || null,
+          customer_phone: data.phone,
+          customer_address: data.deliveryMethod === 'delivery' ? data.address : null,
+          delivery_method: data.deliveryMethod,
+          subtotal: total,
+          total,
+          currency,
+          payment_method: data.paymentMethod,
+        })
+        .select('id')
+        .single();
+      if (orderError) throw orderError;
+
+      const orderItems = items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        total: item.product.price * item.quantity,
+      }));
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+      if (itemsError) throw itemsError;
+
+      toast.success('Order placed successfully!');
+      clearCart();
+      navigate('/orders');
     } catch (error) {
-      toast.error('Failed to process order. Please try again.');
+      const message = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

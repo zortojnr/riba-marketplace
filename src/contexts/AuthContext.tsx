@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import type { User, AuthState, LoginFormData, SignupFormData } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { mapProfileToUser, type ProfileRow } from '@/lib/mappers';
@@ -72,13 +72,22 @@ const fetchProfile = async (userId: string): Promise<User> => {
   return mapProfileToUser(data as ProfileRow);
 };
 
-const redirectForRole = (navigate: ReturnType<typeof useNavigate>, role: User['role']) => {
-  navigate(role === 'owner' ? '/onboarding' : '/dashboard');
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // After login/signup, return to wherever the user was headed (e.g. a
+  // ProtectedRoute or checkout bounced them here with state: { from }),
+  // falling back to the role-based default landing page.
+  const redirectAfterAuth = (role: User['role']) => {
+    const from = (location.state as { from?: { pathname: string; search: string } } | null)?.from;
+    if (from?.pathname) {
+      navigate(`${from.pathname}${from.search || ''}`, { replace: true });
+      return;
+    }
+    navigate(role === 'owner' ? '/onboarding' : '/dashboard');
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -122,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = await fetchProfile(signInData.user.id);
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signInData.session.access_token } });
       toast.success('Login successful!');
-      redirectForRole(navigate, user.role);
+      redirectAfterAuth(user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -153,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = await fetchProfile(signUpData.user.id);
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
       toast.success('Account created successfully!');
-      redirectForRole(navigate, user.role);
+      redirectAfterAuth(user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Signup failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -182,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = await fetchProfile(signUpData.user.id);
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token: signUpData.session.access_token } });
       toast.success('Exploring demo mode');
-      redirectForRole(navigate, user.role);
+      redirectAfterAuth(user.role);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Demo login failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
